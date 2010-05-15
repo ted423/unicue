@@ -39,4 +39,5 @@ public:
 	afx_msg void OnFileOpen();
 	afx_msg void OnFileSave();
 	afx_msg void OnBnClickedButtonDo();
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 };
