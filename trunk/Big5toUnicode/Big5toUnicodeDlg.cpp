@@ -78,6 +78,7 @@ BEGIN_MESSAGE_MAP(CBig5toUnicodeDlg, CDialog)
 	ON_COMMAND(ID_FILE_OPEN, &CBig5toUnicodeDlg::OnFileOpen)
 	ON_COMMAND(ID_FILE_SAVE, &CBig5toUnicodeDlg::OnFileSave)
 	ON_BN_CLICKED(IDC_BUTTON_DO, &CBig5toUnicodeDlg::OnBnClickedButtonDo)
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 
@@ -187,7 +188,7 @@ void CBig5toUnicodeDlg::OnFileOpen()
 		if (!OpenFile.Open(openFile.GetPathName(),CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
 		{
 			OpenFile.Close();
-			::AfxMessageBox(_T("打开失败！"));
+			::AfxMessageBox(_T("打开失败！"),MB_OK);
 			return;
 		}
 		m_big5Length=OpenFile.GetLength();
@@ -231,4 +232,45 @@ void CBig5toUnicodeDlg::OnFileSave()
 void CBig5toUnicodeDlg::OnBnClickedButtonDo()
 {
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(Big5ToUnicode(m_big5Str,m_big5Length));
+}
+
+void CBig5toUnicodeDlg::OnDropFiles(HDROP hDropInfo)
+{
+	int nFileCount;  
+	nFileCount=::DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, MAX_PATH);
+	if(nFileCount == 1)
+	{
+		TCHAR szFileName[MAX_PATH+1];
+		::DragQueryFile(hDropInfo, 0, szFileName, MAX_PATH);
+		CFile OpenFile;
+		if (!OpenFile.Open(szFileName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
+		{
+			OpenFile.Close();
+			::AfxMessageBox(_T("打开失败！"),MB_OK);
+		}
+		else
+		{
+			m_big5Length=OpenFile.GetLength();
+			if (m_big5Str)
+			{
+				delete []m_big5Str;
+				m_big5Str=NULL;
+			}
+			m_big5Str=new char[m_big5Length+1];
+			OpenFile.Read(m_big5Str,m_big5Length);
+			OpenFile.Close();
+
+			m_big5Str[m_big5Length]='\0';
+			CString Big5Str(m_big5Str);
+			CEdit *Big5Edit=(CEdit *)GetDlgItem(IDC_EDIT_BIG5);
+			Big5Edit->SetWindowText(Big5Str);
+		}
+	}
+	else
+	{
+		::AfxMessageBox(_T(" 只能同时打开一个文件"),MB_OK);
+	}
+	::DragFinish(hDropInfo);
+
+	CDialog::OnDropFiles(hDropInfo);
 }
