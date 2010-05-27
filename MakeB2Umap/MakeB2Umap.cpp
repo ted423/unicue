@@ -57,7 +57,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	string str;
 	int i=0;
 	int offset=0x8140;
-	char zero[2]={'\x0','\x0'};
+	char zero[2]={'\xFD','\xFF'};
 	while(getline(infile,str))
 	{
 		i++;
@@ -79,7 +79,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		unsigned char HighByte,LowByte;
 		HighByte=CharToHex(str[9])*16 +CharToHex(str[10]);
-		LowByte=CharToHex(str[11])*16+CharToHex(str[12]);
+		LowByte =CharToHex(str[11])*16+CharToHex(str[12]);
 
 		if ((HighByte>255)||(LowByte>255))
 			cerr<<"Error occur in Line "<<i<<"!\n";
