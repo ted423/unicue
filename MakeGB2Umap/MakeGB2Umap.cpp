@@ -42,7 +42,7 @@ unsigned char CharToHex(char ch)
 
 char SingleHexToChar(int SingleHex)
 {
-	if ((SingleHex<0) ||(SingleHex>=16))
+	if ((SingleHex<0)||(SingleHex>=16))
 		return ' ';
 	
 	if (SingleHex<=9)
@@ -56,19 +56,19 @@ void HexToChar(char* dst,unsigned int WideChar)
 {
 	if (!dst)
 		return;
-	int Bit4,Bit3,Bit2,Bit1;
+	int D4,D3,D2,D1;
 	unsigned int TempChar=WideChar;
-	Bit1=TempChar%16;
+	D1=TempChar%16;
 	TempChar=TempChar>>4;
-	Bit2=TempChar%16;
+	D2=TempChar%16;
 	TempChar=TempChar>>4;
-	Bit3=TempChar%16;
+	D3=TempChar%16;
 	TempChar=TempChar>>4;
-	Bit4=TempChar%16;
-	*dst=SingleHexToChar(Bit4);
-	*(dst+1)=SingleHexToChar(Bit3);
-	*(dst+2)=SingleHexToChar(Bit2);
-	*(dst+3)=SingleHexToChar(Bit1);
+	D4=TempChar%16;
+	*dst=SingleHexToChar(D4);
+	*(dst+1)=SingleHexToChar(D3);
+	*(dst+2)=SingleHexToChar(D2);
+	*(dst+3)=SingleHexToChar(D1);
 }
 
 bool MakeFullCP936()
@@ -118,7 +118,7 @@ bool MakeFullCP936()
 int _tmain(int argc, _TCHAR* argv[])
 {
 	/*使用CP936-raw.txt创建完整映射表CP936-full.txt时取消下面的注释*/
-	//MakeFullCP936();
+	MakeFullCP936();
 
 	string inFilename="CP936-full.txt";
 	ifstream infile(inFilename.c_str());
