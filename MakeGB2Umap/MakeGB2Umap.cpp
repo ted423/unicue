@@ -118,7 +118,7 @@ bool MakeFullCP936()
 int _tmain(int argc, _TCHAR* argv[])
 {
 	/*使用CP936-raw.txt创建完整映射表CP936-full.txt时取消下面的注释*/
-	MakeFullCP936();
+	//MakeFullCP936();
 
 	string inFilename="CP936-full.txt";
 	ifstream infile(inFilename.c_str());
