@@ -19,3 +19,12 @@ GBK to Unicode
 映射表物理文件gb2u-little-endian.map为按GBK顺序存放的Unicode字符，范围为0x8140～0xFEFE，不含ASCII部分
 和Windows平台CP936的差异：基本一致，但多了94个字符
 Unicode组织提供的CP936映射表：http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP936.TXT
+
+Shift-JIS to Unicode
+采用微软的CP932版本，http://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT
+字符包括两部分：JIS X 0201:1997和JIS X 0208:1997，第一部分是ASCII码、8bit半角片假名，第二部分是全角平/片假名、汉字
+（JIS X 0208到Shift-JIS有一对一的映射关系：http://zh.wikipedia.org/zh/Shift_JIS）
+Shift-JIS的码表空间是：0x00～0x7F（ASCII）、0xA1～0xDF（半角片假名）、0x8140～0x9FFC、0xE040～0xFC4B
+注意0x5C和0x7E是映射到Unicode的0x005C和0x007E，全角字符高位需要避开0xA1～0xDF
+和Windows平台CP932的差异：一致。CP932比JIS X 208:1997多收录388个字符
+映射表物理文件jis2u-little-endian.map由不连续的两部分组成，0xA1～0xDF、0x8140～0xFEFE（补齐），因此有两个偏移
