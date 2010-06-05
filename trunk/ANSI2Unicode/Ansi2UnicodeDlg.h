@@ -31,6 +31,7 @@ protected:
 	wchar_t* m_UnicodeString;       //Unicode字符串
 	UINT     m_UnicodeLength;       //Unicode字符串的长度
 	BOOL     m_AutoCheckCode;       //是否自动检查编码
+	CString  m_FilePathName;        //文本文件路径
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -46,4 +47,6 @@ public:
 	afx_msg void OnBnClickedButtonDo();
 	afx_msg void OnDropFiles(HDROP hDropInfo);
 	afx_msg void OnCbnSelchangeComboSelectcode();
+	afx_msg void OnBnClickedButtonSave();
+	afx_msg void OnBnClickedButtonSaveas();
 };
