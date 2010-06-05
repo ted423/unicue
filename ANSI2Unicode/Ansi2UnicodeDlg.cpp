@@ -49,12 +49,13 @@ END_MESSAGE_MAP()
 
 CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAnsi2UnicodeDlg::IDD, pParent),m_bNeedConvert(TRUE),m_RawStringLength(0),m_StringLength(0),m_UnicodeLength(0),
-	m_StringCodeType(CODETYPE_DEFAULT),m_AutoCheckCode(TRUE)
+	m_StringCodeType(CODETYPE_SHIFTJIS),m_AutoCheckCode(TRUE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_RawString=NULL;
 	m_String=NULL;
 	m_UnicodeString=NULL;
+	m_FilePathName="";
 }
 
 CAnsi2UnicodeDlg::~CAnsi2UnicodeDlg()
@@ -90,6 +91,8 @@ BEGIN_MESSAGE_MAP(CAnsi2UnicodeDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_DO, &CAnsi2UnicodeDlg::OnBnClickedButtonDo)
 	ON_WM_DROPFILES()
 	ON_CBN_SELCHANGE(IDC_COMBO_SELECTCODE, &CAnsi2UnicodeDlg::OnCbnSelchangeComboSelectcode)
+	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CAnsi2UnicodeDlg::OnBnClickedButtonSave)
+	ON_BN_CLICKED(IDC_BUTTON_SAVEAS, &CAnsi2UnicodeDlg::OnBnClickedButtonSaveas)
 END_MESSAGE_MAP()
 
 
@@ -204,8 +207,9 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 	CFileDialog openFile(TRUE,_T("*.txt"),NULL,OFN_EXTENSIONDIFFERENT|OFN_FILEMUSTEXIST|OFN_PATHMUSTEXIST,_T("txt文本文件(*.txt)|*.txt|cue文件(*.cue)|*.cue|log文件(*.log)|*.log||"));
 	if (openFile.DoModal() == IDOK)
 	{
+		m_FilePathName=openFile.GetPathName();
 		CFile OpenFile;
-		if (!OpenFile.Open(openFile.GetPathName(),CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
+		if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
 		{
 			OpenFile.Close();
 			::AfxMessageBox(_T("打开失败！"),MB_OK);
@@ -306,13 +310,17 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 			//检测编码
 			if (m_AutoCheckCode==TRUE)
 			{
-				m_StringCodeType=CheckCodeType(m_String,m_StringLength);
+				m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
 				theCombo->SetCurSel(m_StringCodeType);
 			}
 
+			//左
 			CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
 			CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 			LeftEdit->SetWindowText(LeftEditText);
+
+			//右
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
 		}
 	}
 }
@@ -340,10 +348,12 @@ void CAnsi2UnicodeDlg::OnFileSave()
 
 void CAnsi2UnicodeDlg::OnBnClickedButtonDo()
 {
+	/*
 	if (m_bNeedConvert)
 		GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
 	else
 		MessageBox(_T("Unicode或UTF-8文本，无需转换!"));
+	*/
 }
 
 void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
@@ -354,6 +364,7 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 	{
 		TCHAR szFileName[MAX_PATH+1];
 		::DragQueryFile(hDropInfo, 0, szFileName, MAX_PATH);
+		m_FilePathName=CString(szFileName);
 		CFile OpenFile;
 		if (!OpenFile.Open(szFileName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
 		{
@@ -460,15 +471,19 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 				//检测编码
 				if (m_AutoCheckCode==TRUE)
 				{
-					m_StringCodeType=CheckCodeType(m_String,m_StringLength);
+					m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
 					CComboBox *theCombo;
 					theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 					theCombo->SetCurSel(m_StringCodeType);
 				}
 
+				//左
 				CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
 				CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 				LeftEdit->SetWindowText(LeftEditText);
+				
+				//右
+				GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
 			}
 		}
 	}
@@ -490,4 +505,45 @@ void CAnsi2UnicodeDlg::OnCbnSelchangeComboSelectcode()
 		m_StringCodeType=theCombo->GetCurSel();
 		GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
 	}
+}
+
+void CAnsi2UnicodeDlg::OnBnClickedButtonSave()
+{
+	CFile SaveFile;
+	if (!SaveFile.Open(m_FilePathName,CFile::modeCreate|CFile::modeWrite|CFile::shareExclusive|CFile::typeBinary))
+	{
+		::AfxMessageBox(_T("无法写入文件！"),MB_OK);
+		return;
+	}
+	CString UnicodeStr;
+	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(UnicodeStr);
+	CStringA UTF8Str=CW2A(UnicodeStr,CP_UTF8);
+	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
+	SaveFile.Write(&UTF8BOM,3);
+	SaveFile.Write((LPCSTR)UTF8Str,UTF8Str.GetLength());
+	SaveFile.Close();
+}
+
+void CAnsi2UnicodeDlg::OnBnClickedButtonSaveas()
+{
+	CString FilePath,FileType;
+	int position=m_FilePathName.ReverseFind('.');
+	FilePath=m_FilePathName.Left(position);
+	FileType=m_FilePathName.Right(m_FilePathName.GetLength()-position);
+	FilePath+=_T("(utf-8)");
+	FilePath+=FileType;
+
+	CFile SaveFile;
+	if (!SaveFile.Open(FilePath,CFile::modeCreate|CFile::modeWrite|CFile::shareExclusive|CFile::typeBinary))
+	{
+		::AfxMessageBox(_T("无法写入文件！"),MB_OK);
+		return;
+	}
+	CString UnicodeStr;
+	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(UnicodeStr);
+	CStringA UTF8Str=CW2A(UnicodeStr,CP_UTF8);
+	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
+	SaveFile.Write(&UTF8BOM,3);
+	SaveFile.Write((LPCSTR)UTF8Str,UTF8Str.GetLength());
+	SaveFile.Close();
 }

@@ -13,6 +13,9 @@
 #define IDC_CHECK_AUTOCHECKCODE         1004
 #define IDC_EDIT_ANSI                   1005
 #define IDC_COMBO_SELECTCODE            1010
+#define IDC_BUTTON_SAVE                 1011
+#define IDC_BUTTON2                     1012
+#define IDC_BUTTON_SAVEAS               1012
 #define ID_FILE_EXIT                    32774
 #define ID_ABOUT                        32775
 
@@ -22,7 +25,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1011
+#define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

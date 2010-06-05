@@ -323,7 +323,7 @@ CString AnsiToUnicode(const char* AnsiStr,UINT length, CodeType codetype)
 	}
 }
 
-CodeType CheckCodeType(const char* AnsiStr,UINT length)
+CodeType CheckCodeType(const char* AnsiStr,UINT length,CodeType OldCodeType)
 {
-	return CODETYPE_DEFAULT;
+	return OldCodeType;
 }
