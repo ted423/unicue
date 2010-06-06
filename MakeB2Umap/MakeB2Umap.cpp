@@ -1,3 +1,10 @@
+/************************************************************************/
+/*  Make Ansi to Unicode Charmap 1.0 (Big5)                             */
+/*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
+/*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
+/*  Distributed under GPLv3                                             */
+/************************************************************************/
+
 // MakeB2Umap.cpp : 定义控制台应用程序的入口点。
 //
 #pragma once
@@ -11,14 +18,14 @@ using namespace std;
 unsigned char CharToHex(char ch) 
 { 
 	//0-9 
-	if (ch >= '0' && ch <= '9') 
-		return (ch - '0');         
+	if (ch>='0'&&ch<='9') 
+		return (ch-'0');         
 	//9-15 
-	if (ch >= 'A' && ch <= 'F') 
-		return (ch - 'A' + 0xA); 
+	if (ch>='A'&&ch<='F') 
+		return (ch-'A'+0xA); 
 	//9-15
-	if (ch >= 'a' && ch <= 'f') 
-		return (ch - 'a' + 0xA);
+	if (ch>='a'&&ch<='f') 
+		return (ch-'a'+0xA);
 
 	return(0);
 }

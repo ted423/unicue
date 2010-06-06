@@ -1,3 +1,10 @@
+/************************************************************************/
+/*  Ansi to Unicode 1.0                                                 */
+/*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
+/*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
+/*  Distributed under GPLv3                                             */
+/************************************************************************/
+
 // Ansi2UnicodeDlg.h : 头文件
 //
 
@@ -32,6 +39,7 @@ protected:
 	UINT     m_UnicodeLength;       //Unicode字符串的长度
 	BOOL     m_AutoCheckCode;       //是否自动检查编码
 	CString  m_FilePathName;        //文本文件路径
+	CString  m_CodeStatus;          //编码检测状态
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -49,4 +57,5 @@ public:
 	afx_msg void OnCbnSelchangeComboSelectcode();
 	afx_msg void OnBnClickedButtonSave();
 	afx_msg void OnBnClickedButtonSaveas();
+	afx_msg void OnBnClickedCheckAutocheckcode();
 };
