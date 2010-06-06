@@ -1,3 +1,10 @@
+/************************************************************************/
+/*  Make Ansi to Unicode Charmap 1.0 (Shift-JIS)                        */
+/*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
+/*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
+/*  Distributed under GPLv3                                             */
+/************************************************************************/
+
 // MakeJIS2Umap.cpp : 定义控制台应用程序的入口点。
 //
 

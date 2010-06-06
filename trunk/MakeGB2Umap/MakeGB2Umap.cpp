@@ -1,3 +1,10 @@
+/************************************************************************/
+/*  Make Ansi to Unicode Charmap 1.0 (GBK)                              */
+/*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
+/*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
+/*  Distributed under GPLv3                                             */
+/************************************************************************/
+
 // MakeGB2Umap.cpp : 定义控制台应用程序的入口点。
 //
 
@@ -80,7 +87,7 @@ bool MakeFullCP936()
 		cerr<<"Unable to open CP936-raw.txt!\n";
 		return false;
 	}
-	ofstream outfile("CP936-full.txt",ios::out);
+	ofstream outfile("CP936-full.txt",ios::binary);
 	if (!outfile)
 	{
 		cerr<<"Unable to create CP936-full.txt!\n";
@@ -105,12 +112,15 @@ bool MakeFullCP936()
 
 	for (int i=0;i<appendLength;i++)
 	{
-		outfile<<endl;
+		outfile<<"\r\n";
 		HexToChar(dst,APPENDOFFSET+i);
 		outfile<<"0x"<<dst;
 		HexToChar(dst,AppendGBKChar[i]);
 		outfile<<' '<<"0x"<<dst;
 	}
+
+	outfile<<"\r\nOxFFFF 0xFFFD";
+	outfile.close();
 
 	return true;
 }
@@ -118,7 +128,7 @@ bool MakeFullCP936()
 int _tmain(int argc, _TCHAR* argv[])
 {
 	/*使用CP936-raw.txt创建完整映射表CP936-full.txt时取消下面的注释*/
-	//MakeFullCP936();
+	MakeFullCP936();
 
 	string inFilename="CP936-full.txt";
 	ifstream infile(inFilename.c_str());

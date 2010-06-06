@@ -1,3 +1,10 @@
+/************************************************************************/
+/*  Ansi to Unicode 1.0                                                 */
+/*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
+/*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
+/*  Distributed under GPLv3                                             */
+/************************************************************************/
+
 // Ansi2UnicodeDlg.cpp : 实现文件
 //
 #pragma once
@@ -56,6 +63,7 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	m_String=NULL;
 	m_UnicodeString=NULL;
 	m_FilePathName="";
+	m_CodeStatus="";
 }
 
 CAnsi2UnicodeDlg::~CAnsi2UnicodeDlg()
@@ -93,6 +101,7 @@ BEGIN_MESSAGE_MAP(CAnsi2UnicodeDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_COMBO_SELECTCODE, &CAnsi2UnicodeDlg::OnCbnSelchangeComboSelectcode)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CAnsi2UnicodeDlg::OnBnClickedButtonSave)
 	ON_BN_CLICKED(IDC_BUTTON_SAVEAS, &CAnsi2UnicodeDlg::OnBnClickedButtonSaveas)
+	ON_BN_CLICKED(IDC_CHECK_AUTOCHECKCODE, &CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode)
 END_MESSAGE_MAP()
 
 
@@ -130,7 +139,7 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 	// 添加编码选项
 	CComboBox *theCombo;
 	theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
-	theCombo->InsertString(-1,_T("Default"));
+	theCombo->InsertString(-1,_T("Local Codepage"));
 	theCombo->InsertString(-1,_T("GBK"));
 	theCombo->InsertString(-1,_T("Big5"));
 	theCombo->InsertString(-1,_T("Shift-JIS"));
@@ -237,10 +246,14 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 
 		CComboBox *theCombo;
 		theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
+		CStatic *theStatic;
+		theStatic=(CStatic*)GetDlgItem(IDC_STATIC_STAT);
+		m_CodeStatus=_T("未知编码");
 
 		// Unicode(little-endian)
 		if (((unsigned char)m_RawString[0]==0xFF)&&((unsigned char)m_RawString[1]==0xFE))
 		{
+			m_CodeStatus=_T("Unicode (little endian)");
 			m_bNeedConvert=FALSE;
 			m_StringCodeType=CODETYPE_UNICODE;
 			theCombo->SetCurSel(m_StringCodeType);
@@ -259,6 +272,7 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 		// Unicode(big-endian)
 		if (((unsigned char)m_RawString[0]==0xFE)&&((unsigned char)m_RawString[1]==0xFF))
 		{
+			m_CodeStatus=_T("Unicode (big endian)");
 			m_bNeedConvert=FALSE;
 			m_StringCodeType=CODETYPE_UNICODE;
 			theCombo->SetCurSel(m_StringCodeType);
@@ -285,6 +299,7 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 		// UTF-8(with BOM)
 		if (((unsigned char)m_RawString[0]==0xEF)&&((unsigned char)m_RawString[1]==0xBB)&&((unsigned char)m_RawString[2]==0xBF))
 		{
+			m_CodeStatus=_T("UTF-8 (with BOM)");
 			m_bNeedConvert=FALSE;
 			m_StringCodeType=CODETYPE_UTF8;
 			theCombo->SetCurSel(m_StringCodeType);
@@ -294,6 +309,7 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 
 		if (m_bNeedConvert==FALSE)
 		{
+			theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
 			CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 			if (m_StringCodeType==CODETYPE_UNICODE)
 			{
@@ -312,7 +328,31 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 			{
 				m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
 				theCombo->SetCurSel(m_StringCodeType);
+				switch (m_StringCodeType)
+				{
+				case CODETYPE_DEFAULT:
+					m_CodeStatus=_T("未知编码");
+					break;
+				case CODETYPE_SHIFTJIS:
+					m_CodeStatus=_T("Shift-JIS");
+					break;
+				case CODETYPE_GBK:
+					m_CodeStatus=_T("GBK");
+					break;
+				case CODETYPE_BIG5:
+					m_CodeStatus=_T("Big5");
+					break;
+				case CODETYPE_UTF8:
+					m_CodeStatus=_T("UTF-8 (without BOM)");
+					break;
+				default:
+					m_CodeStatus=_T("未知编码");
+				}
 			}
+			else
+				m_CodeStatus=_T("已经关闭编码自动检测");
+
+			theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
 
 			//左
 			CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
@@ -393,13 +433,18 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			m_String=m_RawString;
 			m_StringLength=m_RawStringLength;
 
+			CComboBox *theCombo;
+			theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
+			CStatic *theStatic;
+			theStatic=(CStatic*)GetDlgItem(IDC_STATIC_STAT);
+			m_CodeStatus=_T("未知编码");
+
 			// Unicode(little-endian)
 			if (((unsigned char)m_RawString[0]==0xFF)&&((unsigned char)m_RawString[1]==0xFE))
 			{
+				m_CodeStatus=_T("Unicode (little endian)");
 				m_bNeedConvert=FALSE;
 				m_StringCodeType=CODETYPE_UNICODE;
-				CComboBox *theCombo;
-				theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 				theCombo->SetCurSel(m_StringCodeType);
 				m_String=m_RawString+2; //真正的起始地址
 				m_StringLength=m_RawStringLength-2; //真正的长度
@@ -416,10 +461,9 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			// Unicode(big-endian)
 			if (((unsigned char)m_RawString[0]==0xFE)&&((unsigned char)m_RawString[1]==0xFF))
 			{
+				m_CodeStatus=_T("Unicode (big endian)");
 				m_bNeedConvert=FALSE;
 				m_StringCodeType=CODETYPE_UNICODE;
-				CComboBox *theCombo;
-				theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 				theCombo->SetCurSel(m_StringCodeType);
 				m_String=m_RawString+2; //真正的起始地址
 				m_StringLength=m_RawStringLength-2; //真正的长度
@@ -444,10 +488,9 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			// UTF-8(with BOM)
 			if (((unsigned char)m_RawString[0]==0xEF)&&((unsigned char)m_RawString[1]==0xBB)&&((unsigned char)m_RawString[2]==0xBF))
 			{
+				m_CodeStatus=_T("UTF-8 (with BOM)");
 				m_bNeedConvert=FALSE;
 				m_StringCodeType=CODETYPE_UTF8;
-				CComboBox *theCombo;
-				theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 				theCombo->SetCurSel(m_StringCodeType);
 				m_String=m_RawString+3; //真正的起始地址
 				m_StringLength=m_RawStringLength-3; //真正的长度
@@ -455,6 +498,7 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 
 			if (m_bNeedConvert==FALSE)
 			{
+				theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
 				CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 				if (m_StringCodeType==CODETYPE_UNICODE)
 				{
@@ -472,10 +516,32 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 				if (m_AutoCheckCode==TRUE)
 				{
 					m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
-					CComboBox *theCombo;
-					theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 					theCombo->SetCurSel(m_StringCodeType);
+					switch (m_StringCodeType)
+					{
+					case CODETYPE_DEFAULT:
+						m_CodeStatus=_T("未知编码");
+						break;
+					case CODETYPE_SHIFTJIS:
+						m_CodeStatus=_T("Shift-JIS");
+						break;
+					case CODETYPE_GBK:
+						m_CodeStatus=_T("GBK");
+						break;
+					case CODETYPE_BIG5:
+						m_CodeStatus=_T("Big5");
+						break;
+					case CODETYPE_UTF8:
+						m_CodeStatus=_T("UTF-8 (without BOM)");
+						break;
+					default:
+						m_CodeStatus=_T("未知编码");
+					}
 				}
+				else
+					m_CodeStatus=_T("已经关闭编码自动检测");
+
+				theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
 
 				//左
 				CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
@@ -546,4 +612,9 @@ void CAnsi2UnicodeDlg::OnBnClickedButtonSaveas()
 	SaveFile.Write(&UTF8BOM,3);
 	SaveFile.Write((LPCSTR)UTF8Str,UTF8Str.GetLength());
 	SaveFile.Close();
+}
+
+void CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode()
+{
+	m_AutoCheckCode=!m_AutoCheckCode;
 }
