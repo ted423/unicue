@@ -58,4 +58,5 @@ public:
 	afx_msg void OnBnClickedButtonSave();
 	afx_msg void OnBnClickedButtonSaveas();
 	afx_msg void OnBnClickedCheckAutocheckcode();
+	afx_msg void OnFileOption();
 };

@@ -9,8 +9,10 @@
 //
 #pragma once
 #include "stdafx.h"
+#include "HyperLink.h"
 #include "Ansi2Unicode.h"
 #include "Ansi2UnicodeDlg.h"
+#include "SettingDlg.h"
 #include "toUnicode.h"
 
 #ifdef _DEBUG
@@ -19,7 +21,6 @@
 
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
-
 class CAboutDlg : public CDialog
 {
 public:
@@ -27,6 +28,7 @@ public:
 
 // 对话框数据
 	enum { IDD = IDD_ABOUTBOX };
+	CHyperLink m_link;
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
@@ -34,6 +36,8 @@ public:
 // 实现
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	virtual BOOL OnInitDialog();
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -45,15 +49,19 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 }
 
+BOOL CAboutDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+	m_link.Attach(GetDlgItem(IDC_STATIC_KUYUR)->GetSafeHwnd());
+
+	return TRUE;
+}
+
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
 
 // CAnsi2UnicodeDlg 对话框
-
-
-
-
 CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAnsi2UnicodeDlg::IDD, pParent),m_bNeedConvert(TRUE),m_RawStringLength(0),m_StringLength(0),m_UnicodeLength(0),
 	m_StringCodeType(CODETYPE_SHIFTJIS),m_AutoCheckCode(TRUE)
@@ -102,6 +110,7 @@ BEGIN_MESSAGE_MAP(CAnsi2UnicodeDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CAnsi2UnicodeDlg::OnBnClickedButtonSave)
 	ON_BN_CLICKED(IDC_BUTTON_SAVEAS, &CAnsi2UnicodeDlg::OnBnClickedButtonSaveas)
 	ON_BN_CLICKED(IDC_CHECK_AUTOCHECKCODE, &CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode)
+	ON_COMMAND(ID_FILE_OPTION, &CAnsi2UnicodeDlg::OnFileOption)
 END_MESSAGE_MAP()
 
 
@@ -617,4 +626,13 @@ void CAnsi2UnicodeDlg::OnBnClickedButtonSaveas()
 void CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode()
 {
 	m_AutoCheckCode=!m_AutoCheckCode;
+}
+
+void CAnsi2UnicodeDlg::OnFileOption()
+{
+	CSettingDlg SettingDlg;
+	if (SettingDlg.DoModal()==IDOK)
+	{
+
+	}
 }
