@@ -37,11 +37,7 @@
 
 #include <afxwin.h>         // MFC 核心组件和标准组件
 #include <afxext.h>         // MFC 扩展
-
-
 #include <afxdisp.h>        // MFC 自动化类
-
-
 
 #ifndef _AFX_NO_OLE_SUPPORT
 #include <afxdtctl.h>		// MFC 对 Internet Explorer 4 公共控件的支持
@@ -50,12 +46,20 @@
 #include <afxcmn.h>			// MFC 对 Windows 公共控件的支持
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+// TinyXml
+#ifdef TIXML_USE_STL
+#include <iostream>
+#include <sstream>
+using namespace std;
+#else
+#include <stdio.h>
+#endif
 
-
-
-
-
-
+#if defined( WIN32 ) && defined( TUNE )
+#include <crtdbg.h>
+_CrtMemState startMemState;
+_CrtMemState endMemState;
+#endif
 
 
 #ifdef _UNICODE

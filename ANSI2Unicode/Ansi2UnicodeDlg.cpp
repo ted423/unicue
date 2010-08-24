@@ -9,7 +9,7 @@
 //
 #pragma once
 #include "stdafx.h"
-#include "HyperLink.h"
+#include "..\misc\HyperLink.h"
 #include "Ansi2Unicode.h"
 #include "Ansi2UnicodeDlg.h"
 #include "SettingDlg.h"

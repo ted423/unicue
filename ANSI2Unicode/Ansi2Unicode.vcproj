@@ -198,7 +198,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\HyperLink.cpp"
+				RelativePath="..\misc\HyperLink.cpp"
 				>
 			</File>
 			<File
@@ -225,6 +225,22 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\misc\tinystr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\misc\tinyxml.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\misc\tinyxmlerror.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\misc\tinyxmlparser.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -240,7 +256,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\HyperLink.h"
+				RelativePath="..\misc\HyperLink.h"
 				>
 			</File>
 			<File
@@ -253,6 +269,14 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath="..\misc\tinystr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\misc\tinyxml.h"
 				>
 			</File>
 			<File
