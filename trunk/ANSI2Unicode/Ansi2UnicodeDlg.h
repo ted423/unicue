@@ -9,6 +9,18 @@
 //
 
 #pragma once
+#include "..\misc\tinyxml.h"
+
+//配置
+typedef struct CConfig_tag
+{
+	CString TemplateStr;                   //命名模板
+	BOOL AutoFixCue;                       //
+	BOOL AutoFixTTA;                       //
+	BOOL AcceptDragFLAC;                   //
+	BOOL AcceptDragTAK;                    //
+	BOOL AcceptDragAPE;                    //
+}CConfig;
 
 // CAnsi2UnicodeDlg 对话框
 class CAnsi2UnicodeDlg : public CDialog
@@ -40,6 +52,7 @@ protected:
 	BOOL     m_AutoCheckCode;       //是否自动检查编码
 	CString  m_FilePathName;        //文本文件路径
 	CString  m_CodeStatus;          //编码检测状态
+	CConfig  m_Config;              //配置
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
