@@ -1,5 +1,5 @@
 /************************************************************************/
-/*  Extra script of Akaiito (PS2 game)                                  */
+/*  Extract script of Akaiito (PS2 game)                                */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */

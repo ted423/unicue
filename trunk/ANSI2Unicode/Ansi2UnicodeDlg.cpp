@@ -1,5 +1,5 @@
 /************************************************************************/
-/*  Ansi to Unicode 1.0                                                 */
+/*  Ansi to Unicode 1.0.2                                               */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */
@@ -64,7 +64,7 @@ END_MESSAGE_MAP()
 // CAnsi2UnicodeDlg 对话框
 CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAnsi2UnicodeDlg::IDD, pParent),m_bNeedConvert(TRUE),m_RawStringLength(0),m_StringLength(0),m_UnicodeLength(0),
-	m_StringCodeType(CODETYPE_SHIFTJIS),m_AutoCheckCode(TRUE)
+	m_StringCodeType(CODETYPE_SHIFTJIS),m_AutoCheckCode(TRUE),m_bConfigLoaded(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_RawString=NULL;
@@ -72,6 +72,13 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	m_UnicodeString=NULL;
 	m_FilePathName="";
 	m_CodeStatus="";
+	m_Config.TemplateStr=_T(".utf-8");
+	m_Config.AutoFixCue=TRUE;
+	m_Config.AutoFixTTA=FALSE;
+	m_Config.AcceptDragFLAC=TRUE;
+	m_Config.AcceptDragAPE=TRUE;
+	m_Config.AcceptDragTAK=TRUE;
+	m_ConfigPath="";
 }
 
 CAnsi2UnicodeDlg::~CAnsi2UnicodeDlg()
@@ -145,6 +152,32 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	// 从文件加载配置
+	TCHAR szFull[_MAX_PATH];
+	GetModuleFileName(NULL,szFull,_MAX_PATH);
+	m_ConfigPath=CString(szFull);
+	int pos;
+	pos=m_ConfigPath.ReverseFind('\\');
+	m_ConfigPath=m_ConfigPath.Left(pos);
+	m_ConfigPath+=_T("\\Config.xml");
+
+	TiXmlDocument *doc = new TiXmlDocument(CStringA(m_ConfigPath));
+	//bool loadOK = doc->LoadFile(TIXML_ENCODING_LEGACY);
+	bool loadOK = doc->LoadFile(TIXML_ENCODING_UTF8);
+	if (loadOK)
+	{
+		m_bConfigLoaded=LoadConfigFile(doc);
+		if (!m_bConfigLoaded)
+		{
+			::DeleteFile(m_ConfigPath);
+			CreateConfigFile();
+		}
+	}
+	else
+	{
+		CreateConfigFile();
+	}
+
 	// 添加编码选项
 	CComboBox *theCombo;
 	theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
@@ -157,6 +190,198 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 	theCombo->SetCurSel(m_StringCodeType);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
+{
+	TiXmlHandle hRoot(xmlfile);
+	TiXmlElement *pElem;
+	TiXmlHandle hXmlHandle(0);
+
+	//config节点
+	pElem=hRoot.FirstChildElement().Element();
+	if (!pElem) return FALSE;
+	if (strcmp(pElem->Value(),"config")!=0)
+		return FALSE;
+
+	//TemplateStr节点
+	hXmlHandle=TiXmlHandle(pElem);
+	pElem=hXmlHandle.FirstChild("TemplateStr").Element();
+	if (!pElem) return FALSE;
+	m_Config.TemplateStr=UTF8toUnicode(pElem->GetText());
+
+	//AutoFixCue节点
+	pElem=hXmlHandle.FirstChild("AutoFixCue").Element();
+	if (!pElem) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.AutoFixCue=TRUE;
+	else
+		m_Config.AutoFixCue=FALSE;
+
+	//AutoFixTTA节点
+	pElem=hXmlHandle.FirstChild("AutoFixTTA").Element();
+	if (!pElem) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.AutoFixTTA=TRUE;
+	else
+		m_Config.AutoFixTTA=FALSE;
+
+	//AcceptDragFLAC节点
+	pElem=hXmlHandle.FirstChild("AcceptDragFLAC").Element();
+	if (!pElem) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.AcceptDragFLAC=TRUE;
+	else
+		m_Config.AcceptDragFLAC=FALSE;
+
+	//AcceptDragTAK节点
+	pElem=hXmlHandle.FirstChild("AcceptDragTAK").Element();
+	if (!pElem) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.AcceptDragTAK=TRUE;
+	else
+		m_Config.AcceptDragTAK=FALSE;
+
+	//AcceptDragAPE节点
+	pElem=hXmlHandle.FirstChild("AcceptDragAPE").Element();
+	if (!pElem) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.AcceptDragAPE=TRUE;
+	else
+		m_Config.AcceptDragAPE=FALSE;
+
+	return TRUE;
+}
+
+BOOL CAnsi2UnicodeDlg::CreateConfigFile()
+{
+	TiXmlDocument configdoc;
+	//TiXmlDeclaration *dec=new TiXmlDeclaration("1.0","gb2312","");
+	TiXmlDeclaration *dec=new TiXmlDeclaration("1.0","utf-8","");
+	TiXmlElement *configure=new TiXmlElement("config");
+
+	TiXmlElement *TemplateStr=new TiXmlElement("TemplateStr");
+	TiXmlText *TemplateStrValue=new TiXmlText(".utf-8");
+	TemplateStr->LinkEndChild(TemplateStrValue);
+	configure->LinkEndChild(TemplateStr);
+
+	TiXmlElement *AutoFixCue=new TiXmlElement("AutoFixCue");
+	TiXmlText *AutoFixCueValue=new TiXmlText("true");
+	AutoFixCue->LinkEndChild(AutoFixCueValue);
+	configure->LinkEndChild(AutoFixCue);
+
+	TiXmlElement *AutoFixTTA=new TiXmlElement("AutoFixTTA");
+	TiXmlText *AutoFixTTAValue=new TiXmlText("false");
+	AutoFixTTA->LinkEndChild(AutoFixTTAValue);
+	configure->LinkEndChild(AutoFixTTA);
+
+	TiXmlElement *AcceptDragFLAC=new TiXmlElement("AcceptDragFLAC");
+	TiXmlText *AcceptDragFLACValue=new TiXmlText("true");
+	AcceptDragFLAC->LinkEndChild(AcceptDragFLACValue);
+	configure->LinkEndChild(AcceptDragFLAC);
+
+	TiXmlElement *AcceptDragTAK=new TiXmlElement("AcceptDragTAK");
+	TiXmlText *AcceptDragTAKValue=new TiXmlText("true");
+	AcceptDragTAK->LinkEndChild(AcceptDragTAKValue);
+	configure->LinkEndChild(AcceptDragTAK);
+
+	TiXmlElement *AcceptDragAPE=new TiXmlElement("AcceptDragAPE");
+	TiXmlText *AcceptDragAPEValue=new TiXmlText("true");
+	AcceptDragAPE->LinkEndChild(AcceptDragAPEValue);
+	configure->LinkEndChild(AcceptDragAPE);
+
+	configdoc.LinkEndChild(dec);
+	configdoc.LinkEndChild(configure);
+	//configdoc.SaveFile(CStringA(m_ConfigPath));
+
+	TiXmlPrinter printer;
+	configdoc.Accept(&printer);
+
+	//const CStringW UnicodeStr(printer.CStr());
+	//const CStringA UTF8Str=CW2A(UnicodeStr,CP_UTF8);
+	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
+
+	CFile theFile;
+	theFile.Open(m_ConfigPath,CFile::modeCreate|CFile::modeWrite);
+	theFile.Write(UTF8BOM,3);
+	theFile.Write(printer.CStr(),strlen(printer.CStr()));
+	theFile.Close();
+
+	return TRUE;
+}
+
+BOOL CAnsi2UnicodeDlg::SaveConfigFile()
+{
+	TiXmlDocument configdoc;
+	TiXmlDeclaration *dec=new TiXmlDeclaration("1.0","utf-8","");
+	TiXmlElement *configure=new TiXmlElement("config");
+
+	TiXmlElement *TemplateStr=new TiXmlElement("TemplateStr");
+	CStringA UTF8Str=CW2A(m_Config.TemplateStr,CP_UTF8);
+	TiXmlText *TemplateStrValue=new TiXmlText(UTF8Str);
+	TemplateStr->LinkEndChild(TemplateStrValue);
+	configure->LinkEndChild(TemplateStr);
+
+	TiXmlElement *AutoFixCue=new TiXmlElement("AutoFixCue");
+	TiXmlText *AutoFixCueValue;
+	if (m_Config.AutoFixCue)
+		AutoFixCueValue=new TiXmlText("true");
+	else
+		AutoFixCueValue=new TiXmlText("false");
+	AutoFixCue->LinkEndChild(AutoFixCueValue);
+	configure->LinkEndChild(AutoFixCue);
+
+	TiXmlElement *AutoFixTTA=new TiXmlElement("AutoFixTTA");
+	TiXmlText *AutoFixTTAValue;
+	if (m_Config.AutoFixTTA)
+		AutoFixTTAValue=new TiXmlText("true");
+	else
+		AutoFixTTAValue=new TiXmlText("false");
+	AutoFixTTA->LinkEndChild(AutoFixTTAValue);
+	configure->LinkEndChild(AutoFixTTA);
+
+	TiXmlElement *AcceptDragFLAC=new TiXmlElement("AcceptDragFLAC");
+	TiXmlText *AcceptDragFLACValue;
+	if (m_Config.AcceptDragFLAC)
+		AcceptDragFLACValue=new TiXmlText("true");
+	else
+		AcceptDragFLACValue=new TiXmlText("false");
+	AcceptDragFLAC->LinkEndChild(AcceptDragFLACValue);
+	configure->LinkEndChild(AcceptDragFLAC);
+
+	TiXmlElement *AcceptDragTAK=new TiXmlElement("AcceptDragTAK");
+	TiXmlText *AcceptDragTAKValue;
+	if (m_Config.AcceptDragTAK)
+		AcceptDragTAKValue=new TiXmlText("true");
+	else
+		AcceptDragTAKValue=new TiXmlText("false");
+	AcceptDragTAK->LinkEndChild(AcceptDragTAKValue);
+	configure->LinkEndChild(AcceptDragTAK);
+
+	TiXmlElement *AcceptDragAPE=new TiXmlElement("AcceptDragAPE");
+	TiXmlText *AcceptDragAPEValue;
+	if (m_Config.AcceptDragAPE)
+		AcceptDragAPEValue=new TiXmlText("true");
+	else
+		AcceptDragAPEValue=new TiXmlText("false");
+	AcceptDragAPE->LinkEndChild(AcceptDragAPEValue);
+	configure->LinkEndChild(AcceptDragAPE);
+
+	configdoc.LinkEndChild(dec);
+	configdoc.LinkEndChild(configure);
+
+	TiXmlPrinter printer;
+	configdoc.Accept(&printer);
+
+	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
+
+	CFile theFile;
+	theFile.Open(m_ConfigPath,CFile::modeCreate|CFile::modeWrite);
+	theFile.Write(UTF8BOM,3);
+	theFile.Write(printer.CStr(),strlen(printer.CStr()));
+	theFile.Close();
+
+	return TRUE;
 }
 
 void CAnsi2UnicodeDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -222,7 +447,7 @@ void CAnsi2UnicodeDlg::OnAbout()
 
 void CAnsi2UnicodeDlg::OnFileOpen()
 {
-	CFileDialog openFile(TRUE,_T("*.txt"),NULL,OFN_EXTENSIONDIFFERENT|OFN_FILEMUSTEXIST|OFN_PATHMUSTEXIST,_T("txt文本文件(*.txt)|*.txt|cue文件(*.cue)|*.cue|log文件(*.log)|*.log||"));
+	CFileDialog openFile(TRUE,_T("*.txt"),NULL,OFN_EXTENSIONDIFFERENT|OFN_FILEMUSTEXIST|OFN_PATHMUSTEXIST,_T("文本文件(*.txt;*.cue;*.log)|*.txt;*.cue;*.log|txt文本文件(*.txt)|*.txt|cue文件(*.cue)|*.cue|log文件(*.log)|*.log|All Files (*.*)|*.*||"));
 	if (openFile.DoModal() == IDOK)
 	{
 		m_FilePathName=openFile.GetPathName();
@@ -253,11 +478,12 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 		m_String=m_RawString;
 		m_StringLength=m_RawStringLength;
 
-		CComboBox *theCombo;
-		theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
-		CStatic *theStatic;
-		theStatic=(CStatic*)GetDlgItem(IDC_STATIC_STAT);
+		CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
+		CStatic   *theStatic =(CStatic*)GetDlgItem(IDC_STATIC_STAT);
 		m_CodeStatus=_T("未知编码");
+
+		CEdit *LeftEdit =(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
+		CEdit *RightEdit=(CEdit *)GetDlgItem(IDC_EDIT_UNICODE);
 
 		// Unicode(little-endian)
 		if (((unsigned char)m_RawString[0]==0xFF)&&((unsigned char)m_RawString[1]==0xFE))
@@ -322,12 +548,14 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 			CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 			if (m_StringCodeType==CODETYPE_UNICODE)
 			{
-				CString LeftEditText(m_UnicodeString);
-				LeftEdit->SetWindowText(LeftEditText);
+				CString RightEditText(m_UnicodeString);
+				RightEdit->SetWindowText(RightEditText);
+				LeftEdit->SetWindowText(_T(""));
 			}
 			if (m_StringCodeType==CODETYPE_UTF8)
 			{
-				LeftEdit->SetWindowText(UTF8toUnicde(m_String,m_StringLength));
+				RightEdit->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+				LeftEdit->SetWindowText(_T(""));
 			}
 		}
 		else
@@ -365,18 +593,19 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 
 			//左
 			CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
-			CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 			LeftEdit->SetWindowText(LeftEditText);
 
 			//右
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
+			RightEdit->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
 		}
+		if (m_Config.AutoFixTTA) FixTTACue();
+		if (m_Config.AutoFixCue) FixCue();
 	}
 }
 
 void CAnsi2UnicodeDlg::OnFileSave()
 {
-	CFileDialog saveFile(FALSE,_T("*.txt"),NULL,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_PATHMUSTEXIST,_T("txt文本文件(*.txt)|*.txt|cue文件(*.cue)|*.cue|log文件(*.log)|*.log||"));
+	CFileDialog saveFile(FALSE,_T("*.txt"),NULL,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_PATHMUSTEXIST,_T("txt文本文件(*.txt)|*.txt|cue文件(*.cue)|*.cue|log文件(*.log)|*.log|All Files (*.*)|*.*||"));
 	if (saveFile.DoModal() == IDOK)
 	{
 		CFile SaveFile;
@@ -442,11 +671,13 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			m_String=m_RawString;
 			m_StringLength=m_RawStringLength;
 
-			CComboBox *theCombo;
-			theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
-			CStatic *theStatic;
-			theStatic=(CStatic*)GetDlgItem(IDC_STATIC_STAT);
+			CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
+			CStatic   *theStatic =(CStatic*)GetDlgItem(IDC_STATIC_STAT);
 			m_CodeStatus=_T("未知编码");
+
+			CEdit *LeftEdit =(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
+			CEdit *RightEdit=(CEdit *)GetDlgItem(IDC_EDIT_UNICODE);
+
 
 			// Unicode(little-endian)
 			if (((unsigned char)m_RawString[0]==0xFF)&&((unsigned char)m_RawString[1]==0xFE))
@@ -508,15 +739,16 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			if (m_bNeedConvert==FALSE)
 			{
 				theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
-				CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 				if (m_StringCodeType==CODETYPE_UNICODE)
 				{
-					CString LeftEditText(m_UnicodeString);
-					LeftEdit->SetWindowText(LeftEditText);
+					CString RightEditText(m_UnicodeString);
+					RightEdit->SetWindowText(RightEditText);
+					LeftEdit->SetWindowText(_T(""));
 				}
 				if (m_StringCodeType==CODETYPE_UTF8)
 				{
-					LeftEdit->SetWindowText(UTF8toUnicde(m_String,m_StringLength));
+					RightEdit->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+					LeftEdit->SetWindowText(_T(""));
 				}
 			}
 			else
@@ -554,12 +786,13 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 
 				//左
 				CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
-				CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 				LeftEdit->SetWindowText(LeftEditText);
 				
 				//右
-				GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
+				RightEdit->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
 			}
+			if (m_Config.AutoFixTTA) FixTTACue();
+			if (m_Config.AutoFixCue) FixCue();
 		}
 	}
 	else
@@ -605,7 +838,7 @@ void CAnsi2UnicodeDlg::OnBnClickedButtonSaveas()
 	int position=m_FilePathName.ReverseFind('.');
 	FilePath=m_FilePathName.Left(position);
 	FileType=m_FilePathName.Right(m_FilePathName.GetLength()-position);
-	FilePath+=_T("(utf-8)");
+	FilePath+=m_Config.TemplateStr;
 	FilePath+=FileType;
 
 	CFile SaveFile;
@@ -633,6 +866,208 @@ void CAnsi2UnicodeDlg::OnFileOption()
 	CSettingDlg SettingDlg;
 	if (SettingDlg.DoModal()==IDOK)
 	{
-
+		m_Config=SettingDlg.m_Config;
+		SaveConfigFile();
 	}
+}
+
+CConfig CAnsi2UnicodeDlg::GetConfig()
+{
+	return m_Config;
+}
+
+void CAnsi2UnicodeDlg::FixCue()
+{
+	FixTTACue();
+
+	int pos;
+	BOOL isCue=FALSE;
+	pos=m_FilePathName.ReverseFind('.');
+	if (m_FilePathName.Right(m_FilePathName.GetLength()-pos-1).MakeLower()==_T("cue"))
+		isCue=TRUE;
+
+	CString OldCueString;
+	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(OldCueString);
+	int BeginPos=OldCueString.Find(_T("FILE \""));
+	if (BeginPos==-1)
+	{
+		if (isCue) MessageBox(_T("cue文件异常"));
+		return;
+	}
+	int EndPos=OldCueString.Find(_T("\" WAVE"));
+	if (EndPos==-1)
+	{
+		if (isCue) MessageBox(_T("cue文件异常"));
+		return;
+	}
+	BeginPos+=6;
+	if (BeginPos>=EndPos)
+	{
+		if (isCue) MessageBox(_T("cue文件异常"));
+		return;
+	}
+
+	CString MusicFileName,MusicFilePath; //音频文件名，路径
+	MusicFileName=OldCueString.Mid(BeginPos,EndPos-BeginPos);
+
+	//依据文档路径：m_FilePathName查找音频文件
+	pos=m_FilePathName.ReverseFind('\\');
+	MusicFilePath=m_FilePathName.Left(pos);
+	MusicFilePath+=_T("\\");
+	MusicFilePath+=MusicFileName;
+
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+	hFind=FindFirstFile(MusicFilePath, &FindFileData);
+
+	if (hFind==INVALID_HANDLE_VALUE) //没找到cue中音频文件
+	{
+		pos=MusicFilePath.ReverseFind('.');
+		MusicFilePath=MusicFilePath.Left(pos);
+		//替换扩展名查找
+		CString FindFilePath;
+
+		FindFilePath=MusicFilePath+_T(".ape"); //ape
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".mac"); //ape
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".flac"); //flac
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".fla"); //flac
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".tta"); //tta
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".tak"); //tak
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".wv"); //wv
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".m4a"); //apple lossless
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".wma"); //wma
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".wav"); //wav
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".wave"); //wav
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		FindFilePath=MusicFilePath+_T(".mp3"); //mp3
+		hFind=FindFirstFile(FindFilePath, &FindFileData);
+		if (hFind!=INVALID_HANDLE_VALUE)
+		{
+			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			FindClose(hFind);
+			return;
+		}
+
+		//最后还是没找到
+		FindClose(hFind);
+		return;
+	}
+	else
+	{
+		FindClose(hFind);
+		return;
+	}
+}
+
+void CAnsi2UnicodeDlg::FixTTACue()
+{
+	CString OldCueString;
+	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(OldCueString);
+	OldCueString.MakeLower(); //转换为小写
+	int Pos=OldCueString.Find(_T("the true audio"));
+	if (Pos<=0)
+		return;
+	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(OldCueString);
+	CString NewCueString;
+	NewCueString=OldCueString.Left(Pos)+_T("WAVE")+OldCueString.Right(OldCueString.GetLength()-Pos-14);
+	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(NewCueString);
 }
