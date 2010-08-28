@@ -1,5 +1,5 @@
 /************************************************************************/
-/*  Ansi to Unicode 1.0                                                 */
+/*  Ansi to Unicode 1.0.2                                               */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */
@@ -264,7 +264,7 @@ CString JIStoUnicode(const char* jisStr,UINT length)
 	return unicodeStr;
 }
 
-CString UTF8toUnicde(const char* utf8Str,UINT length)
+CString UTF8toUnicode(const char* utf8Str,UINT length)
 {
 	CString unicodeStr;
 	unicodeStr=_T("");
@@ -326,7 +326,7 @@ CString AnsiToUnicode(const char* AnsiStr,UINT length, CodeType codetype)
 	case CODETYPE_SHIFTJIS:
 		return JIStoUnicode(AnsiStr,length);
 	case CODETYPE_UTF8:
-		return UTF8toUnicde(AnsiStr,length);
+		return UTF8toUnicode(AnsiStr,length);
 	default:
 		return CString(AnsiStr);
 	}
@@ -597,4 +597,51 @@ CodeType CheckCodeType(const char* AnsiStr,UINT length,CodeType OldCodeType)
 	BIG5MapBuffer=NULL;
 
 	return strCodeType;
+}
+
+//一组无长度转换函数
+CString UTF8toUnicode(const char* utf8Str)
+{
+	UINT theLength=strlen(utf8Str);
+	return UTF8toUnicode(utf8Str,theLength);
+}
+
+CString GBKtoUnicode(const char* gbkStr)
+{
+	UINT theLength=strlen(gbkStr);
+	return GBKtoUnicode(gbkStr,theLength);
+}
+CString Big5toUnicode(const char* big5Str)
+{
+	UINT theLength=strlen(big5Str);
+	return Big5toUnicode(big5Str,theLength);
+}
+
+CString JIStoUnicode(const char* jisStr)
+{
+	UINT theLength=strlen(jisStr);
+	return JIStoUnicode(jisStr,theLength);
+}
+
+CodeType CheckCodeType(const char* AnsiStr,CodeType OldCodeType)
+{
+	UINT theLength=strlen(AnsiStr);
+	return CheckCodeType(AnsiStr,theLength,OldCodeType);
+}
+
+CString AnsiToUnicode(const char* AnsiStr,CodeType codetype)
+{
+	switch(codetype)
+	{
+	case CODETYPE_GBK:
+		return GBKtoUnicode(AnsiStr);
+	case CODETYPE_BIG5:
+		return Big5toUnicode(AnsiStr);
+	case CODETYPE_SHIFTJIS:
+		return JIStoUnicode(AnsiStr);
+	case CODETYPE_UTF8:
+		return UTF8toUnicode(AnsiStr);
+	default:
+		return CString(AnsiStr);
+	}
 }

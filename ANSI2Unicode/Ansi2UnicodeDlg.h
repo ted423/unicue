@@ -1,5 +1,5 @@
 /************************************************************************/
-/*  Ansi to Unicode 1.0                                                 */
+/*  Ansi to Unicode 1.0.2                                               */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */
@@ -53,6 +53,14 @@ protected:
 	CString  m_FilePathName;        //文本文件路径
 	CString  m_CodeStatus;          //编码检测状态
 	CConfig  m_Config;              //配置
+	CString  m_ConfigPath;          //配置文件路径
+	BOOL     m_bConfigLoaded;
+
+	BOOL LoadConfigFile(TiXmlDocument *xmlfile);
+	BOOL CreateConfigFile();
+	BOOL SaveConfigFile();
+	void FixCue();
+	void FixTTACue();
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -61,6 +69,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	CConfig GetConfig();
 	afx_msg void OnFileExit();
 	afx_msg void OnAbout();
 	afx_msg void OnFileOpen();
