@@ -64,7 +64,7 @@ END_MESSAGE_MAP()
 // CAnsi2UnicodeDlg 对话框
 CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAnsi2UnicodeDlg::IDD, pParent),m_bNeedConvert(TRUE),m_RawStringLength(0),m_StringLength(0),m_UnicodeLength(0),
-	m_StringCodeType(CODETYPE_SHIFTJIS),m_AutoCheckCode(TRUE),m_bConfigLoaded(FALSE)
+	m_StringCodeType(CODETYPE_SHIFTJIS),/*m_bConfigLoaded(FALSE),*/m_bCommandLineOpen(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_RawString=NULL;
@@ -72,13 +72,49 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	m_UnicodeString=NULL;
 	m_FilePathName="";
 	m_CodeStatus="";
-	m_Config.TemplateStr=_T(".utf-8");
-	m_Config.AutoFixCue=TRUE;
-	m_Config.AutoFixTTA=FALSE;
-	m_Config.AcceptDragFLAC=TRUE;
-	m_Config.AcceptDragAPE=TRUE;
-	m_Config.AcceptDragTAK=TRUE;
-	m_ConfigPath="";
+	//m_ConfigPath="";
+
+	// 从文件加载配置
+	TCHAR szFull[_MAX_PATH];
+	GetModuleFileName(NULL,szFull,_MAX_PATH);
+	m_ConfigPath=CString(szFull);
+	int pos;
+	pos=m_ConfigPath.ReverseFind('\\');
+	m_ConfigPath=m_ConfigPath.Left(pos);
+	m_ConfigPath+=_T("\\Config.xml");
+
+	TiXmlDocument *doc = new TiXmlDocument(CStringA(m_ConfigPath));
+	bool loadOK = doc->LoadFile(TIXML_ENCODING_UTF8);
+	if (loadOK)
+	{
+		if (!LoadConfigFile(doc))
+		{
+			::DeleteFile(m_ConfigPath);
+			CreateConfigFile();
+			m_Config.TemplateStr=_T(".utf-8");
+			m_Config.AutoFixCue=TRUE;
+			m_Config.AutoFixTTA=FALSE;
+			m_Config.AcceptDragFLAC=TRUE;
+			m_Config.AcceptDragAPE=TRUE;
+			m_Config.AcceptDragTAK=TRUE;
+			m_Config.AutoCheckCode=TRUE;
+			m_Config.AlwaysOnTop=TRUE;
+			m_Config.CloseCuePrompt=FALSE;
+		}
+	}
+	else
+	{
+		CreateConfigFile();
+		m_Config.TemplateStr=_T(".utf-8");
+		m_Config.AutoFixCue=TRUE;
+		m_Config.AutoFixTTA=FALSE;
+		m_Config.AcceptDragFLAC=TRUE;
+		m_Config.AcceptDragAPE=TRUE;
+		m_Config.AcceptDragTAK=TRUE;
+		m_Config.AutoCheckCode=TRUE;
+		m_Config.AlwaysOnTop=TRUE;
+		m_Config.CloseCuePrompt=FALSE;
+	}
 }
 
 CAnsi2UnicodeDlg::~CAnsi2UnicodeDlg()
@@ -98,7 +134,8 @@ CAnsi2UnicodeDlg::~CAnsi2UnicodeDlg()
 void CAnsi2UnicodeDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Check(pDX, IDC_CHECK_AUTOCHECKCODE, m_AutoCheckCode);
+	DDX_Check(pDX, IDC_CHECK_AUTOCHECKCODE, m_Config.AutoCheckCode);
+	DDX_Check(pDX, IDC_CHECK_ALWAYSONTOP,   m_Config.AlwaysOnTop);
 	//DDX_CBIndex(pDX, IDC_COMBO_SELECTCODE, m_StringCodeType);
 }
 
@@ -118,6 +155,8 @@ BEGIN_MESSAGE_MAP(CAnsi2UnicodeDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_SAVEAS, &CAnsi2UnicodeDlg::OnBnClickedButtonSaveas)
 	ON_BN_CLICKED(IDC_CHECK_AUTOCHECKCODE, &CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode)
 	ON_COMMAND(ID_FILE_OPTION, &CAnsi2UnicodeDlg::OnFileOption)
+	ON_BN_CLICKED(IDC_CHECK_ALWAYSONTOP, &CAnsi2UnicodeDlg::OnBnClickedCheckAlwaysontop)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -152,32 +191,6 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
-	// 从文件加载配置
-	TCHAR szFull[_MAX_PATH];
-	GetModuleFileName(NULL,szFull,_MAX_PATH);
-	m_ConfigPath=CString(szFull);
-	int pos;
-	pos=m_ConfigPath.ReverseFind('\\');
-	m_ConfigPath=m_ConfigPath.Left(pos);
-	m_ConfigPath+=_T("\\Config.xml");
-
-	TiXmlDocument *doc = new TiXmlDocument(CStringA(m_ConfigPath));
-	//bool loadOK = doc->LoadFile(TIXML_ENCODING_LEGACY);
-	bool loadOK = doc->LoadFile(TIXML_ENCODING_UTF8);
-	if (loadOK)
-	{
-		m_bConfigLoaded=LoadConfigFile(doc);
-		if (!m_bConfigLoaded)
-		{
-			::DeleteFile(m_ConfigPath);
-			CreateConfigFile();
-		}
-	}
-	else
-	{
-		CreateConfigFile();
-	}
-
 	// 添加编码选项
 	CComboBox *theCombo;
 	theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
@@ -189,7 +202,52 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 	theCombo->InsertString(-1,_T("Unicode(UTF-16)"));
 	theCombo->SetCurSel(m_StringCodeType);
 
+	//设置或取消最前端
+	SetDialogPos();
+
+	// 获取命令行
+	if (AfxGetApp()->m_lpCmdLine[0]!=_T('\0'))
+	{
+		m_bCommandLineOpen=TRUE;
+		m_FilePathName=AfxGetApp()->m_lpCmdLine;
+		if (m_FilePathName.GetAt(0)==_T('\"'))
+			m_FilePathName.Delete(0,1);
+		if (m_FilePathName.GetAt(m_FilePathName.GetLength()-1)==_T('\"'))
+			m_FilePathName=m_FilePathName.Left(m_FilePathName.GetLength()-1);
+		if (TRUE==DealFile())
+		{
+			if (m_Config.AutoFixTTA) FixTTACue();
+			if (m_Config.AutoFixCue) FixCue();
+		}
+	}
+
+	/*
+	LPWSTR *szArglist;
+	int nArgs;
+	int i;
+
+	szArglist=CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	if(NULL!=szArglist )
+	{
+		for( i=0; i<nArgs; i++) 
+			AfxMessageBox(szArglist[i]);
+	}
+
+	LocalFree(szArglist);
+	*/
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+BOOL CAnsi2UnicodeDlg::SetDialogPos()
+{
+	CRect rc;
+	GetWindowRect(&rc);
+
+	if (m_Config.AlwaysOnTop)
+		return SetWindowPos(&wndTopMost,rc.left,rc.top,rc.bottom,rc.right,SWP_NOMOVE|SWP_NOSIZE);
+	else
+		return SetWindowPos(&wndNoTopMost,rc.left,rc.top,rc.bottom,rc.right,SWP_NOMOVE|SWP_NOSIZE);
 }
 
 BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
@@ -208,11 +266,13 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	hXmlHandle=TiXmlHandle(pElem);
 	pElem=hXmlHandle.FirstChild("TemplateStr").Element();
 	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
 	m_Config.TemplateStr=UTF8toUnicode(pElem->GetText());
 
 	//AutoFixCue节点
 	pElem=hXmlHandle.FirstChild("AutoFixCue").Element();
 	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
 	if (_stricmp(pElem->GetText(),"true")==0)
 		m_Config.AutoFixCue=TRUE;
 	else
@@ -221,6 +281,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	//AutoFixTTA节点
 	pElem=hXmlHandle.FirstChild("AutoFixTTA").Element();
 	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
 	if (_stricmp(pElem->GetText(),"true")==0)
 		m_Config.AutoFixTTA=TRUE;
 	else
@@ -229,6 +290,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	//AcceptDragFLAC节点
 	pElem=hXmlHandle.FirstChild("AcceptDragFLAC").Element();
 	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
 	if (_stricmp(pElem->GetText(),"true")==0)
 		m_Config.AcceptDragFLAC=TRUE;
 	else
@@ -237,6 +299,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	//AcceptDragTAK节点
 	pElem=hXmlHandle.FirstChild("AcceptDragTAK").Element();
 	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
 	if (_stricmp(pElem->GetText(),"true")==0)
 		m_Config.AcceptDragTAK=TRUE;
 	else
@@ -245,10 +308,38 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	//AcceptDragAPE节点
 	pElem=hXmlHandle.FirstChild("AcceptDragAPE").Element();
 	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
 	if (_stricmp(pElem->GetText(),"true")==0)
 		m_Config.AcceptDragAPE=TRUE;
 	else
 		m_Config.AcceptDragAPE=FALSE;
+
+	//CloseCuePrompt节点
+	pElem=hXmlHandle.FirstChild("CloseCuePrompt").Element();
+	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.CloseCuePrompt=TRUE;
+	else
+		m_Config.CloseCuePrompt=FALSE;
+
+	//AutoCheckCode节点
+	pElem=hXmlHandle.FirstChild("AutoCheckCode").Element();
+	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.AutoCheckCode=TRUE;
+	else
+		m_Config.AutoCheckCode=FALSE;
+
+	//AlwaysOnTop节点
+	pElem=hXmlHandle.FirstChild("AlwaysOnTop").Element();
+	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
+	if (_stricmp(pElem->GetText(),"true")==0)
+		m_Config.AlwaysOnTop=TRUE;
+	else
+		m_Config.AlwaysOnTop=FALSE;
 
 	return TRUE;
 }
@@ -289,6 +380,21 @@ BOOL CAnsi2UnicodeDlg::CreateConfigFile()
 	TiXmlText *AcceptDragAPEValue=new TiXmlText("true");
 	AcceptDragAPE->LinkEndChild(AcceptDragAPEValue);
 	configure->LinkEndChild(AcceptDragAPE);
+
+	TiXmlElement *CloseCuePrompt=new TiXmlElement("CloseCuePrompt");
+	TiXmlText *CloseCuePromptValue=new TiXmlText("false");
+	CloseCuePrompt->LinkEndChild(CloseCuePromptValue);
+	configure->LinkEndChild(CloseCuePrompt);
+
+	TiXmlElement *AutoCheckCode=new TiXmlElement("AutoCheckCode");
+	TiXmlText *AutoCheckCodeValue=new TiXmlText("true");
+	AutoCheckCode->LinkEndChild(AutoCheckCodeValue);
+	configure->LinkEndChild(AutoCheckCode);
+
+	TiXmlElement *AlwaysOnTop=new TiXmlElement("AlwaysOnTop");
+	TiXmlText *AlwaysOnTopValue=new TiXmlText("true");
+	AlwaysOnTop->LinkEndChild(AlwaysOnTopValue);
+	configure->LinkEndChild(AlwaysOnTop);
 
 	configdoc.LinkEndChild(dec);
 	configdoc.LinkEndChild(configure);
@@ -366,6 +472,33 @@ BOOL CAnsi2UnicodeDlg::SaveConfigFile()
 		AcceptDragAPEValue=new TiXmlText("false");
 	AcceptDragAPE->LinkEndChild(AcceptDragAPEValue);
 	configure->LinkEndChild(AcceptDragAPE);
+
+	TiXmlElement *CloseCuePrompt=new TiXmlElement("CloseCuePrompt");
+	TiXmlText *CloseCuePromptValue;
+	if (m_Config.CloseCuePrompt)
+		CloseCuePromptValue=new TiXmlText("true");
+	else
+		CloseCuePromptValue=new TiXmlText("false");
+	CloseCuePrompt->LinkEndChild(CloseCuePromptValue);
+	configure->LinkEndChild(CloseCuePrompt);
+
+	TiXmlElement *AutoCheckCode=new TiXmlElement("AutoCheckCode");
+	TiXmlText *AutoCheckCodeValue;
+	if (m_Config.AutoCheckCode)
+		AutoCheckCodeValue=new TiXmlText("true");
+	else
+		AutoCheckCodeValue=new TiXmlText("false");
+	AutoCheckCode->LinkEndChild(AutoCheckCodeValue);
+	configure->LinkEndChild(AutoCheckCode);
+
+	TiXmlElement *AlwaysOnTop=new TiXmlElement("AlwaysOnTop");
+	TiXmlText *AlwaysOnTopValue;
+	if (m_Config.AlwaysOnTop)
+		AlwaysOnTopValue=new TiXmlText("true");
+	else
+		AlwaysOnTopValue=new TiXmlText("false");
+	AlwaysOnTop->LinkEndChild(AlwaysOnTopValue);
+	configure->LinkEndChild(AlwaysOnTop);
 
 	configdoc.LinkEndChild(dec);
 	configdoc.LinkEndChild(configure);
@@ -445,161 +578,169 @@ void CAnsi2UnicodeDlg::OnAbout()
 	dlgAbout.DoModal();
 }
 
+BOOL CAnsi2UnicodeDlg::DealFile()
+{
+	CFile OpenFile;
+	if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
+	{
+		OpenFile.Close();
+		::AfxMessageBox(_T("打开失败！"),MB_OK);
+		return FALSE;
+	}
+	m_bNeedConvert=TRUE;
+	m_RawStringLength=OpenFile.GetLength();
+	if (m_RawString)
+	{
+		delete []m_RawString;
+		m_RawString=NULL;
+		m_String=NULL;
+	}
+	if (m_UnicodeString)
+	{
+		delete []m_UnicodeString;
+		m_UnicodeString=NULL;
+	}
+	m_RawString=new char[m_RawStringLength+1];
+	OpenFile.Read(m_RawString,m_RawStringLength);
+	OpenFile.Close();
+	m_RawString[m_RawStringLength]='\0';
+	m_String=m_RawString;
+	m_StringLength=m_RawStringLength;
+
+	CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
+	CStatic   *theStatic =(CStatic*)GetDlgItem(IDC_STATIC_STAT);
+	m_CodeStatus=_T("未知编码");
+
+	CEdit *LeftEdit =(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
+	CEdit *RightEdit=(CEdit *)GetDlgItem(IDC_EDIT_UNICODE);
+
+	// Unicode(little-endian)
+	if (((unsigned char)m_RawString[0]==0xFF)&&((unsigned char)m_RawString[1]==0xFE))
+	{
+		m_CodeStatus=_T("Unicode (little endian)");
+		m_bNeedConvert=FALSE;
+		m_StringCodeType=CODETYPE_UNICODE;
+		theCombo->SetCurSel(m_StringCodeType);
+		m_String=m_RawString+2; //真正的起始地址
+		m_StringLength=m_RawStringLength-2; //真正的长度
+		if ((m_RawStringLength%2)!=0)
+		{
+			MessageBox(_T("文本错误！"));
+			return FALSE;
+		}
+		m_UnicodeLength=m_StringLength>>1;
+		m_UnicodeString=new wchar_t[m_UnicodeLength+1];
+		memcpy((void*)m_UnicodeString,m_String,m_StringLength);
+		m_UnicodeString[m_UnicodeLength]='\0';
+	}
+	// Unicode(big-endian)
+	if (((unsigned char)m_RawString[0]==0xFE)&&((unsigned char)m_RawString[1]==0xFF))
+	{
+		m_CodeStatus=_T("Unicode (big endian)");
+		m_bNeedConvert=FALSE;
+		m_StringCodeType=CODETYPE_UNICODE;
+		theCombo->SetCurSel(m_StringCodeType);
+		m_String=m_RawString+2; //真正的起始地址
+		m_StringLength=m_RawStringLength-2; //真正的长度
+		if ((m_RawStringLength%2)!=0)
+		{
+			MessageBox(_T("文本错误！"));
+			return FALSE;
+		}
+		m_UnicodeLength=m_StringLength>>1;
+		m_UnicodeString=new wchar_t[m_UnicodeLength+1];
+		memcpy((void*)m_UnicodeString,m_String,m_StringLength);
+		m_UnicodeString[m_UnicodeLength]='\0';
+		//调整高低位顺序
+		for (UINT i=0;i<m_UnicodeLength;i++)
+		{
+			unsigned char chars[2];
+			memcpy(chars,(void*)(m_UnicodeString+i),2);
+			wchar_t theChr=chars[0]*256+chars[1];
+			m_UnicodeString[i]=theChr;
+		}
+	}
+	// UTF-8(with BOM)
+	if (((unsigned char)m_RawString[0]==0xEF)&&((unsigned char)m_RawString[1]==0xBB)&&((unsigned char)m_RawString[2]==0xBF))
+	{
+		m_CodeStatus=_T("UTF-8 (with BOM)");
+		m_bNeedConvert=FALSE;
+		m_StringCodeType=CODETYPE_UTF8;
+		theCombo->SetCurSel(m_StringCodeType);
+		m_String=m_RawString+3; //真正的起始地址
+		m_StringLength=m_RawStringLength-3; //真正的长度
+	}
+
+	if (m_bNeedConvert==FALSE)
+	{
+		theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
+		if (m_StringCodeType==CODETYPE_UNICODE)
+		{
+			CString RightEditText(m_UnicodeString);
+			RightEdit->SetWindowText(RightEditText);
+			LeftEdit->SetWindowText(_T(""));
+		}
+		if (m_StringCodeType==CODETYPE_UTF8)
+		{
+			RightEdit->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+			LeftEdit->SetWindowText(_T(""));
+		}
+	}
+	else
+	{
+		//检测编码
+		if (m_Config.AutoCheckCode==TRUE)
+		{
+			m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
+			theCombo->SetCurSel(m_StringCodeType);
+			switch (m_StringCodeType)
+			{
+			case CODETYPE_DEFAULT:
+				m_CodeStatus=_T("未知编码");
+				break;
+			case CODETYPE_SHIFTJIS:
+				m_CodeStatus=_T("Shift-JIS");
+				break;
+			case CODETYPE_GBK:
+				m_CodeStatus=_T("GBK");
+				break;
+			case CODETYPE_BIG5:
+				m_CodeStatus=_T("Big5");
+				break;
+			case CODETYPE_UTF8:
+				m_CodeStatus=_T("UTF-8 (without BOM)");
+				break;
+			default:
+				m_CodeStatus=_T("未知编码");
+			}
+		}
+		else
+			m_CodeStatus=_T("已经关闭编码自动检测");
+
+		theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
+
+		//左
+		CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
+		LeftEdit->SetWindowText(LeftEditText);
+
+		//右
+		RightEdit->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
+	}
+	
+	return TRUE;
+}
+
 void CAnsi2UnicodeDlg::OnFileOpen()
 {
 	CFileDialog openFile(TRUE,_T("*.txt"),NULL,OFN_EXTENSIONDIFFERENT|OFN_FILEMUSTEXIST|OFN_PATHMUSTEXIST,_T("文本文件(*.txt;*.cue;*.log)|*.txt;*.cue;*.log|txt文本文件(*.txt)|*.txt|cue文件(*.cue)|*.cue|log文件(*.log)|*.log|All Files (*.*)|*.*||"));
 	if (openFile.DoModal() == IDOK)
 	{
 		m_FilePathName=openFile.GetPathName();
-		CFile OpenFile;
-		if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
+		if (TRUE==DealFile())
 		{
-			OpenFile.Close();
-			::AfxMessageBox(_T("打开失败！"),MB_OK);
-			return;
+			if (m_Config.AutoFixTTA) FixTTACue();
+			if (m_Config.AutoFixCue) FixCue();
 		}
-		m_bNeedConvert=TRUE;
-		m_RawStringLength=OpenFile.GetLength();
-		if (m_RawString)
-		{
-			delete []m_RawString;
-			m_RawString=NULL;
-			m_String=NULL;
-		}
-		if (m_UnicodeString)
-		{
-			delete []m_UnicodeString;
-			m_UnicodeString=NULL;
-		}
-		m_RawString=new char[m_RawStringLength+1];
-		OpenFile.Read(m_RawString,m_RawStringLength);
-		OpenFile.Close();
-		m_RawString[m_RawStringLength]='\0';
-		m_String=m_RawString;
-		m_StringLength=m_RawStringLength;
-
-		CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
-		CStatic   *theStatic =(CStatic*)GetDlgItem(IDC_STATIC_STAT);
-		m_CodeStatus=_T("未知编码");
-
-		CEdit *LeftEdit =(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
-		CEdit *RightEdit=(CEdit *)GetDlgItem(IDC_EDIT_UNICODE);
-
-		// Unicode(little-endian)
-		if (((unsigned char)m_RawString[0]==0xFF)&&((unsigned char)m_RawString[1]==0xFE))
-		{
-			m_CodeStatus=_T("Unicode (little endian)");
-			m_bNeedConvert=FALSE;
-			m_StringCodeType=CODETYPE_UNICODE;
-			theCombo->SetCurSel(m_StringCodeType);
-			m_String=m_RawString+2; //真正的起始地址
-			m_StringLength=m_RawStringLength-2; //真正的长度
-			if ((m_RawStringLength%2)!=0)
-			{
-				MessageBox(_T("文本错误！"));
-				return;
-			}
-			m_UnicodeLength=m_StringLength>>1;
-			m_UnicodeString=new wchar_t[m_UnicodeLength+1];
-			memcpy((void*)m_UnicodeString,m_String,m_StringLength);
-			m_UnicodeString[m_UnicodeLength]='\0';
-		}
-		// Unicode(big-endian)
-		if (((unsigned char)m_RawString[0]==0xFE)&&((unsigned char)m_RawString[1]==0xFF))
-		{
-			m_CodeStatus=_T("Unicode (big endian)");
-			m_bNeedConvert=FALSE;
-			m_StringCodeType=CODETYPE_UNICODE;
-			theCombo->SetCurSel(m_StringCodeType);
-			m_String=m_RawString+2; //真正的起始地址
-			m_StringLength=m_RawStringLength-2; //真正的长度
-			if ((m_RawStringLength%2)!=0)
-			{
-				MessageBox(_T("文本错误！"));
-				return;
-			}
-			m_UnicodeLength=m_StringLength>>1;
-			m_UnicodeString=new wchar_t[m_UnicodeLength+1];
-			memcpy((void*)m_UnicodeString,m_String,m_StringLength);
-			m_UnicodeString[m_UnicodeLength]='\0';
-			//调整高低位顺序
-			for (UINT i=0;i<m_UnicodeLength;i++)
-			{
-				unsigned char chars[2];
-				memcpy(chars,(void*)(m_UnicodeString+i),2);
-				wchar_t theChr=chars[0]*256+chars[1];
-				m_UnicodeString[i]=theChr;
-			}
-		}
-		// UTF-8(with BOM)
-		if (((unsigned char)m_RawString[0]==0xEF)&&((unsigned char)m_RawString[1]==0xBB)&&((unsigned char)m_RawString[2]==0xBF))
-		{
-			m_CodeStatus=_T("UTF-8 (with BOM)");
-			m_bNeedConvert=FALSE;
-			m_StringCodeType=CODETYPE_UTF8;
-			theCombo->SetCurSel(m_StringCodeType);
-			m_String=m_RawString+3; //真正的起始地址
-			m_StringLength=m_RawStringLength-3; //真正的长度
-		}
-
-		if (m_bNeedConvert==FALSE)
-		{
-			theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
-			CEdit *LeftEdit=(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
-			if (m_StringCodeType==CODETYPE_UNICODE)
-			{
-				CString RightEditText(m_UnicodeString);
-				RightEdit->SetWindowText(RightEditText);
-				LeftEdit->SetWindowText(_T(""));
-			}
-			if (m_StringCodeType==CODETYPE_UTF8)
-			{
-				RightEdit->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
-				LeftEdit->SetWindowText(_T(""));
-			}
-		}
-		else
-		{
-			//检测编码
-			if (m_AutoCheckCode==TRUE)
-			{
-				m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
-				theCombo->SetCurSel(m_StringCodeType);
-				switch (m_StringCodeType)
-				{
-				case CODETYPE_DEFAULT:
-					m_CodeStatus=_T("未知编码");
-					break;
-				case CODETYPE_SHIFTJIS:
-					m_CodeStatus=_T("Shift-JIS");
-					break;
-				case CODETYPE_GBK:
-					m_CodeStatus=_T("GBK");
-					break;
-				case CODETYPE_BIG5:
-					m_CodeStatus=_T("Big5");
-					break;
-				case CODETYPE_UTF8:
-					m_CodeStatus=_T("UTF-8 (without BOM)");
-					break;
-				default:
-					m_CodeStatus=_T("未知编码");
-				}
-			}
-			else
-				m_CodeStatus=_T("已经关闭编码自动检测");
-
-			theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
-
-			//左
-			CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
-			LeftEdit->SetWindowText(LeftEditText);
-
-			//右
-			RightEdit->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
-		}
-		if (m_Config.AutoFixTTA) FixTTACue();
-		if (m_Config.AutoFixCue) FixCue();
 	}
 }
 
@@ -643,154 +784,8 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 		TCHAR szFileName[MAX_PATH+1];
 		::DragQueryFile(hDropInfo, 0, szFileName, MAX_PATH);
 		m_FilePathName=CString(szFileName);
-		CFile OpenFile;
-		if (!OpenFile.Open(szFileName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
+		if (TRUE==DealFile())
 		{
-			OpenFile.Close();
-			::AfxMessageBox(_T("打开失败！"),MB_OK);
-		}
-		else
-		{
-			m_bNeedConvert=TRUE;
-			m_RawStringLength=OpenFile.GetLength();
-			if (m_RawString)
-			{
-				delete []m_RawString;
-				m_RawString=NULL;
-				m_String=NULL;
-			}
-			if (m_UnicodeString)
-			{
-				delete []m_UnicodeString;
-				m_UnicodeString=NULL;
-			}
-			m_RawString=new char[m_RawStringLength+1];
-			OpenFile.Read(m_RawString,m_RawStringLength);
-			OpenFile.Close();
-			m_RawString[m_RawStringLength]='\0';
-			m_String=m_RawString;
-			m_StringLength=m_RawStringLength;
-
-			CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
-			CStatic   *theStatic =(CStatic*)GetDlgItem(IDC_STATIC_STAT);
-			m_CodeStatus=_T("未知编码");
-
-			CEdit *LeftEdit =(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
-			CEdit *RightEdit=(CEdit *)GetDlgItem(IDC_EDIT_UNICODE);
-
-
-			// Unicode(little-endian)
-			if (((unsigned char)m_RawString[0]==0xFF)&&((unsigned char)m_RawString[1]==0xFE))
-			{
-				m_CodeStatus=_T("Unicode (little endian)");
-				m_bNeedConvert=FALSE;
-				m_StringCodeType=CODETYPE_UNICODE;
-				theCombo->SetCurSel(m_StringCodeType);
-				m_String=m_RawString+2; //真正的起始地址
-				m_StringLength=m_RawStringLength-2; //真正的长度
-				if ((m_RawStringLength%2)!=0)
-				{
-					MessageBox(_T("文本错误！"));
-					return;
-				}
-				m_UnicodeLength=m_StringLength>>1;
-				m_UnicodeString=new wchar_t[m_UnicodeLength+1];
-				memcpy((void*)m_UnicodeString,m_String,m_StringLength);
-				m_UnicodeString[m_UnicodeLength]='\0';
-			}
-			// Unicode(big-endian)
-			if (((unsigned char)m_RawString[0]==0xFE)&&((unsigned char)m_RawString[1]==0xFF))
-			{
-				m_CodeStatus=_T("Unicode (big endian)");
-				m_bNeedConvert=FALSE;
-				m_StringCodeType=CODETYPE_UNICODE;
-				theCombo->SetCurSel(m_StringCodeType);
-				m_String=m_RawString+2; //真正的起始地址
-				m_StringLength=m_RawStringLength-2; //真正的长度
-				if ((m_RawStringLength%2)!=0)
-				{
-					MessageBox(_T("文本错误！"));
-					return;
-				}
-				m_UnicodeLength=m_StringLength>>1;
-				m_UnicodeString=new wchar_t[m_UnicodeLength+1];
-				memcpy((void*)m_UnicodeString,m_String,m_StringLength);
-				m_UnicodeString[m_UnicodeLength]='\0';
-				//调整高低位顺序
-				for (UINT i=0;i<m_UnicodeLength;i++)
-				{
-					unsigned char chars[2];
-					memcpy(chars,(void*)(m_UnicodeString+i),2);
-					wchar_t theChr=chars[0]*256+chars[1];
-					m_UnicodeString[i]=theChr;
-				}
-			}
-			// UTF-8(with BOM)
-			if (((unsigned char)m_RawString[0]==0xEF)&&((unsigned char)m_RawString[1]==0xBB)&&((unsigned char)m_RawString[2]==0xBF))
-			{
-				m_CodeStatus=_T("UTF-8 (with BOM)");
-				m_bNeedConvert=FALSE;
-				m_StringCodeType=CODETYPE_UTF8;
-				theCombo->SetCurSel(m_StringCodeType);
-				m_String=m_RawString+3; //真正的起始地址
-				m_StringLength=m_RawStringLength-3; //真正的长度
-			}
-
-			if (m_bNeedConvert==FALSE)
-			{
-				theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
-				if (m_StringCodeType==CODETYPE_UNICODE)
-				{
-					CString RightEditText(m_UnicodeString);
-					RightEdit->SetWindowText(RightEditText);
-					LeftEdit->SetWindowText(_T(""));
-				}
-				if (m_StringCodeType==CODETYPE_UTF8)
-				{
-					RightEdit->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
-					LeftEdit->SetWindowText(_T(""));
-				}
-			}
-			else
-			{
-				//检测编码
-				if (m_AutoCheckCode==TRUE)
-				{
-					m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
-					theCombo->SetCurSel(m_StringCodeType);
-					switch (m_StringCodeType)
-					{
-					case CODETYPE_DEFAULT:
-						m_CodeStatus=_T("未知编码");
-						break;
-					case CODETYPE_SHIFTJIS:
-						m_CodeStatus=_T("Shift-JIS");
-						break;
-					case CODETYPE_GBK:
-						m_CodeStatus=_T("GBK");
-						break;
-					case CODETYPE_BIG5:
-						m_CodeStatus=_T("Big5");
-						break;
-					case CODETYPE_UTF8:
-						m_CodeStatus=_T("UTF-8 (without BOM)");
-						break;
-					default:
-						m_CodeStatus=_T("未知编码");
-					}
-				}
-				else
-					m_CodeStatus=_T("已经关闭编码自动检测");
-
-				theStatic->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
-
-				//左
-				CString LeftEditText(m_String); //注意：此时LeftEditText的数据类型已经是Unicode字符串，每个字符占用两个字节
-				LeftEdit->SetWindowText(LeftEditText);
-				
-				//右
-				RightEdit->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
-			}
 			if (m_Config.AutoFixTTA) FixTTACue();
 			if (m_Config.AutoFixCue) FixCue();
 		}
@@ -812,6 +807,8 @@ void CAnsi2UnicodeDlg::OnCbnSelchangeComboSelectcode()
 	{
 		m_StringCodeType=theCombo->GetCurSel();
 		GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
+		if (m_Config.AutoFixTTA) FixTTACue();
+		if (m_Config.AutoFixCue) FixCue();
 	}
 }
 
@@ -858,7 +855,14 @@ void CAnsi2UnicodeDlg::OnBnClickedButtonSaveas()
 
 void CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode()
 {
-	m_AutoCheckCode=!m_AutoCheckCode;
+	m_Config.AutoCheckCode=!m_Config.AutoCheckCode;
+}
+
+void CAnsi2UnicodeDlg::OnBnClickedCheckAlwaysontop()
+{
+	m_Config.AlwaysOnTop=!m_Config.AlwaysOnTop;
+	//设置或取消最前端
+	SetDialogPos();
 }
 
 void CAnsi2UnicodeDlg::OnFileOption()
@@ -867,7 +871,7 @@ void CAnsi2UnicodeDlg::OnFileOption()
 	if (SettingDlg.DoModal()==IDOK)
 	{
 		m_Config=SettingDlg.m_Config;
-		SaveConfigFile();
+		//SaveConfigFile();
 	}
 }
 
@@ -886,29 +890,29 @@ void CAnsi2UnicodeDlg::FixCue()
 	if (m_FilePathName.Right(m_FilePathName.GetLength()-pos-1).MakeLower()==_T("cue"))
 		isCue=TRUE;
 
-	CString OldCueString;
-	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(OldCueString);
-	int BeginPos=OldCueString.Find(_T("FILE \""));
+	CString CueString;
+	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(CueString);
+	int BeginPos=CueString.Find(_T("FILE \""));
 	if (BeginPos==-1)
 	{
-		if (isCue) MessageBox(_T("cue文件异常"));
+		if (isCue&&(!m_Config.CloseCuePrompt)) MessageBox(_T("cue文件异常"));
 		return;
 	}
-	int EndPos=OldCueString.Find(_T("\" WAVE"));
+	int EndPos=CueString.Find(_T("\" WAVE"));
 	if (EndPos==-1)
 	{
-		if (isCue) MessageBox(_T("cue文件异常"));
+		if (isCue&&(!m_Config.CloseCuePrompt)) MessageBox(_T("cue文件异常"));
 		return;
 	}
 	BeginPos+=6;
 	if (BeginPos>=EndPos)
 	{
-		if (isCue) MessageBox(_T("cue文件异常"));
+		if (isCue&&(!m_Config.CloseCuePrompt)) MessageBox(_T("cue文件异常"));
 		return;
 	}
 
 	CString MusicFileName,MusicFilePath; //音频文件名，路径
-	MusicFileName=OldCueString.Mid(BeginPos,EndPos-BeginPos);
+	MusicFileName=CueString.Mid(BeginPos,EndPos-BeginPos);
 
 	//依据文档路径：m_FilePathName查找音频文件
 	pos=m_FilePathName.ReverseFind('\\');
@@ -931,8 +935,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -941,8 +945,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -951,8 +955,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -961,8 +965,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -971,8 +975,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -981,8 +985,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -991,8 +995,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -1001,8 +1005,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -1011,8 +1015,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -1021,8 +1025,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -1031,8 +1035,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -1041,8 +1045,8 @@ void CAnsi2UnicodeDlg::FixCue()
 		hFind=FindFirstFile(FindFilePath, &FindFileData);
 		if (hFind!=INVALID_HANDLE_VALUE)
 		{
-			OldCueString.Replace(MusicFileName,FindFileData.cFileName);
-			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(OldCueString);
+			CueString.Replace(MusicFileName,FindFileData.cFileName);
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 			FindClose(hFind);
 			return;
 		}
@@ -1070,4 +1074,10 @@ void CAnsi2UnicodeDlg::FixTTACue()
 	CString NewCueString;
 	NewCueString=OldCueString.Left(Pos)+_T("WAVE")+OldCueString.Right(OldCueString.GetLength()-Pos-14);
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(NewCueString);
+}
+
+void CAnsi2UnicodeDlg::OnDestroy()
+{
+	CDialog::OnDestroy();
+	SaveConfigFile();
 }
