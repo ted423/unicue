@@ -26,6 +26,9 @@
 #define IDC_SETTING_TAKCHECK            1022
 #define IDC_SETTING_APECHECK            1023
 #define IDC_SETTING_AUTOFIXCHECK        1025
+#define IDC_CHECK_ALWAYSONTOP           1027
+#define IDC_SETTING_CLOSEPROMPTCHECK    1028
+#define IDC_LIST1                       1029
 #define ID_FILE_EXIT                    32774
 #define ID_ABOUT                        32775
 #define ID_FILE_OPTION                  32778
@@ -36,7 +39,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        131
 #define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         1027
+#define _APS_NEXT_CONTROL_VALUE         1030
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

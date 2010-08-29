@@ -20,6 +20,9 @@ typedef struct CConfig_tag
 	BOOL AcceptDragFLAC;                   //
 	BOOL AcceptDragTAK;                    //
 	BOOL AcceptDragAPE;                    //
+	BOOL AutoCheckCode;                    //是否自动检查编码
+	BOOL AlwaysOnTop;                      //是否总在最前
+	BOOL CloseCuePrompt;                   //是否关闭cue文件有错误的提示
 }CConfig;
 
 // CAnsi2UnicodeDlg 对话框
@@ -49,18 +52,20 @@ protected:
 	int      m_StringCodeType;      //字符串编码类型
 	wchar_t* m_UnicodeString;       //Unicode字符串
 	UINT     m_UnicodeLength;       //Unicode字符串的长度
-	BOOL     m_AutoCheckCode;       //是否自动检查编码
 	CString  m_FilePathName;        //文本文件路径
 	CString  m_CodeStatus;          //编码检测状态
 	CConfig  m_Config;              //配置
 	CString  m_ConfigPath;          //配置文件路径
-	BOOL     m_bConfigLoaded;
+	//BOOL     m_bConfigLoaded;       //配置成功加载标记
+	BOOL     m_bCommandLineOpen;    //命令行参数标记
 
 	BOOL LoadConfigFile(TiXmlDocument *xmlfile);
 	BOOL CreateConfigFile();
 	BOOL SaveConfigFile();
 	void FixCue();
 	void FixTTACue();
+	BOOL SetDialogPos();
+	BOOL DealFile();
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -81,4 +86,6 @@ public:
 	afx_msg void OnBnClickedButtonSaveas();
 	afx_msg void OnBnClickedCheckAutocheckcode();
 	afx_msg void OnFileOption();
+	afx_msg void OnBnClickedCheckAlwaysontop();
+	afx_msg void OnDestroy();
 };

@@ -22,6 +22,7 @@ void CSettingDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SETTING_FLACCHECK, m_Config.AcceptDragFLAC);
 	DDX_Check(pDX, IDC_SETTING_TAKCHECK, m_Config.AcceptDragTAK);
 	DDX_Check(pDX, IDC_SETTING_APECHECK, m_Config.AcceptDragAPE);
+	DDX_Check(pDX, IDC_SETTING_CLOSEPROMPTCHECK, m_Config.CloseCuePrompt);
 }
 
 BEGIN_MESSAGE_MAP(CSettingDlg, CDialog)
