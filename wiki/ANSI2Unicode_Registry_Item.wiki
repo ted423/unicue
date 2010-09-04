@@ -1,49 +1,49 @@
 1.0.3版起可以注册到文件右键菜单，程序会写如下注册表项：
 
-[HKEY_CLASSES_ROOT\.uni]
+[HKEY_CLASSES_ROOT\.uni]<BR>
 @="UniCue.UNI"
 
-[HKEY_CLASSES_ROOT\UniCue.UNI]
+[HKEY_CLASSES_ROOT\UniCue.UNI]<BR>
 @="UniCue 文件"
 
-[HKEY_CLASSES_ROOT\UniCue.UNI\shell]
+[HKEY_CLASSES_ROOT\UniCue.UNI\shell]<BR>
 @="Open"
 
-[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open]
+[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open]<BR>
 @="使用 UniCue 打开"
 
-'AppPathName为程序路径，如E:\\Program Files (x86)\\UniCue\\Ansi2Unicode.exe
-[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open\command]
+'AppPathName为程序路径，如E:\\Program Files (x86)\\UniCue\\Ansi2Unicode.exe<BR>
+[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open\command]<BR>
 @="\"AppPathName\" \"%1\""
 
-[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue]
+[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue]<BR>
 @="使用 UniCue 转换编码"
 
-[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue\command]
+[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue\command]<BR>
 @="\"AppPathName\" \"%1\""
 
-[HKEY_CLASSES_ROOT\txtfile\shell\unicue]
+[HKEY_CLASSES_ROOT\txtfile\shell\unicue]<BR>
 @="使用 UniCue 转换编码"
 
-[HKEY_CLASSES_ROOT\txtfile\shell\unicue\command]
+[HKEY_CLASSES_ROOT\txtfile\shell\unicue\command]<BR>
 @="\"AppPathName\" \"%1\""
 
-'程序会查找cue文件的注册表信息，假定cue已经关联到foobar2000.CUE。如果cue文件类型的信息不存在，会将cue关联到UniCue.UNI
-[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue]
+'程序会查找cue文件的注册表信息，假定cue已经关联到foobar2000.CUE。如果cue文件类型的信息不存在，会将cue关联到UniCue.UNI<BR>
+[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue]<BR>
 @="使用 UniCue 转换编码"
 
-[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue\command]
+[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue\command]<BR>
 @="\"AppPathName\" \"%1\""
 
-[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue]
+[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue]<BR>
 @="使用 UniCue 转换编码"
 
-[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue\command]
+[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue\command]<BR>
 @="\"AppPathName\" \"%1\""
 
-[HKEY_CLASSES_ROOT\Applications\ANSI2Unicode.exe\shell\open\command]
+[HKEY_CLASSES_ROOT\Applications\ANSI2Unicode.exe\shell\open\command]<BR>
 @="\"AppPathName\" \"%1\""
 
-'AppFolder为程序目录，如E:\\Program Files (x86)\\UniCue
-[HKEY_CLASSES_ROOT\UniCue.UNI\DefaultIcon]
+'AppFolder为程序目录，如E:\\Program Files (x86)\\UniCue<BR>
+[HKEY_CLASSES_ROOT\UniCue.UNI\DefaultIcon]<BR>
 @="AppFolder\\icons\\file.ico"
