@@ -59,15 +59,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\Ansi2Unicode.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Dialog
 //
 
@@ -76,7 +67,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "关于 Ansi2Unicode"
 FONT 9, "宋体", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    ICON            128,IDC_STATIC,11,17,20,20
     LTEXT           "Ansi2Unicode 1.0.3",IDC_STATIC,40,11,119,8,SS_NOPREFIX
     LTEXT           "http://kuyur.info/blog",IDC_STATIC_KUYUR,40,26,188,11
     DEFPUSHBUTTON   "确定",IDOK,178,7,50,16,WS_GROUP
@@ -90,14 +81,15 @@ FONT 9, "宋体", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "另存",IDC_BUTTON_SAVEAS,430,7,56,14
     PUSHBUTTON      "保存(覆盖)",IDC_BUTTON_SAVE,368,7,56,14
-    CONTROL         "总在最前",IDC_CHECK_ALWAYSONTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,258,9,46,10
+    CONTROL         "总在最前",IDC_CHECK_ALWAYSONTOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,71,9,46,10
     COMBOBOX        IDC_COMBO_SELECTCODE,154,7,80,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "自动检测编码",IDC_CHECK_AUTOCHECKCODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,9,64,10
-    PUSHBUTTON      ">>",IDC_BUTTON_DO,235,161,22,26
+    PUSHBUTTON      ">>",IDC_BUTTON_DO,235,161,22,26,WS_DISABLED
     EDITTEXT        IDC_EDIT_UNICODE,258,21,227,329,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL | WS_HSCROLL
     EDITTEXT        IDC_EDIT_ANSI,7,21,227,329,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL | WS_HSCROLL
     LTEXT           "选择编码",IDC_STATIC,119,11,33,8
     LTEXT           "文档编码检测结果：\n\n文档路径：",IDC_STATIC_STAT,7,355,471,45
+    PUSHBUTTON      "切换到转换字符串",IDC_BUTTON_TRANSFERSTRING,258,7,76,14
 END
 
 IDD_SETTING DIALOGEX 0, 0, 241, 216
@@ -216,6 +208,16 @@ BEGIN
     END
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME_LITTLE    ICON                    "res\\Ansi2Unicode_48x48.ico"
+IDR_MAINFRAME_BIG       ICON                    "res\\Ansi2Unicode_128x128.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

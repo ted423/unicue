@@ -1,5 +1,5 @@
 /************************************************************************/
-/*  Ansi to Unicode 1.0.2                                               */
+/*  Ansi to Unicode 1.0.3                                               */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */

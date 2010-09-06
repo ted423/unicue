@@ -1,5 +1,5 @@
 /************************************************************************/
-/*  Ansi to Unicode 1.0.2                                               */
+/*  Ansi to Unicode 1.0.3                                               */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */
@@ -15,14 +15,15 @@
 typedef struct CConfig_tag
 {
 	CString TemplateStr;                   //命名模板
-	BOOL AutoFixCue;                       //
-	BOOL AutoFixTTA;                       //
-	BOOL AcceptDragFLAC;                   //
-	BOOL AcceptDragTAK;                    //
-	BOOL AcceptDragAPE;                    //
+	BOOL AutoFixCue;                       //自动修正cue中的音频文件扩展名
+	BOOL AutoFixTTA;                       //自动修正旧式TTA标签
+	BOOL AcceptDragFLAC;                   //接受拖曳flac提取内嵌cue
+	BOOL AcceptDragTAK;                    //接受拖曳tak提取内嵌cue
+	BOOL AcceptDragAPE;                    //接受拖曳ape提取内嵌cue
 	BOOL AutoCheckCode;                    //是否自动检查编码
 	BOOL AlwaysOnTop;                      //是否总在最前
 	BOOL CloseCuePrompt;                   //是否关闭cue文件有错误的提示
+	BOOL RegNewUniFile;                    //注册新建uni文件
 }CConfig;
 
 // CAnsi2UnicodeDlg 对话框
@@ -42,7 +43,8 @@ public:
 
 // 实现
 protected:
-	HICON    m_hIcon;
+	HICON    m_hLittleIcon;
+	HICON    m_hBigIcon;
 	CMenu    m_menu;                //菜单
 	BOOL     m_bNeedConvert;        //需要转换
 	char*    m_RawString;           //原始字符串（从文本读取，含BOM）
@@ -56,16 +58,20 @@ protected:
 	CString  m_CodeStatus;          //编码检测状态
 	CConfig  m_Config;              //配置
 	CString  m_ConfigPath;          //配置文件路径
-	//BOOL     m_bConfigLoaded;       //配置成功加载标记
-	BOOL     m_bCommandLineOpen;    //命令行参数标记
+	//BOOL     m_bConfigLoaded;     //配置成功加载标记
+	//BOOL     m_bCommandLineOpen;  //命令行参数标记
+	BOOL     m_bCueFile;            //文本是cue文件
+	BOOL     m_bTransferString;    //切换到转换字符串状态
 
 	BOOL LoadConfigFile(TiXmlDocument *xmlfile);
 	BOOL CreateConfigFile();
 	BOOL SaveConfigFile();
 	void FixCue();
+	void FixInternalCue(CString ExtensionName);
 	void FixTTACue();
 	BOOL SetDialogPos();
 	BOOL DealFile();
+	BOOL ExtractInternalCue(CString ExtensionName);
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -88,4 +94,5 @@ public:
 	afx_msg void OnFileOption();
 	afx_msg void OnBnClickedCheckAlwaysontop();
 	afx_msg void OnDestroy();
+	afx_msg void OnBnClickedButtonTransferstring();
 };

@@ -429,7 +429,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		if (argc>=2)
 		{
 			//第一步：筛选有效字符
-			if (wcscmp(argv[1],_T("-step1"))==0)
+			if (wcscmp(argv[1],L"-step1")==0)
 			{
 				CFile OpenFile;
 				if (!OpenFile.Open(_T("SCRIPT.AFS"),CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
@@ -472,7 +472,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				akaiito_script_dealing=NULL;
 			}
 			//第二步：
-			if (wcscmp(argv[1],_T("-step2"))==0)
+			if (wcscmp(argv[1],L"-step2")==0)
 			{
 				CFile OpenFile;
 				if (!OpenFile.Open(_T("akaiito_script_step1.txt"),CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
@@ -516,7 +516,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 					delete []akaiito_script_dealing;
 				akaiito_script_dealing=NULL;
 			}
-			if (wcscmp(argv[1],_T("-step3-1"))==0)
+			if (wcscmp(argv[1],L"-step3-1")==0)
 			{
 				CFile OpenFile;
 				if (!OpenFile.Open(_T("akaiito_script_step2-1.txt"),CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
@@ -561,7 +561,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 					delete []akaiito_script_dealing;
 				akaiito_script_dealing=NULL;
 			}
-			if (wcscmp(argv[1],_T("-step3-2"))==0)
+			if (wcscmp(argv[1],L"-step3-2")==0)
 			{
 				CFile OpenFile;
 				if (!OpenFile.Open(_T("akaiito_script_step2-2.txt"),CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))

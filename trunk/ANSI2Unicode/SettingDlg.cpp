@@ -26,4 +26,327 @@ void CSettingDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CSettingDlg, CDialog)
+	ON_BN_CLICKED(IDC_SETTING_REGISTERBUTTON, &CSettingDlg::OnBnClickedSettingRegisterbutton)
+	ON_BN_CLICKED(IDC_SETTING_UNREGISTERBUTTON, &CSettingDlg::OnBnClickedSettingUnregisterbutton)
 END_MESSAGE_MAP()
+
+//写注册表值默认类型是REG_SZ
+BOOL CSettingDlg::AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lpValue)
+{
+	HKEY hAddKey;
+	DWORD dwDisp; //存放新建子项时的返回类型
+	if (RegOpenKeyEx(hKey,lpSubItem,0L,KEY_ALL_ACCESS,&hAddKey))
+	{
+		//不存在子项，新建之
+		if (RegCreateKeyEx(hKey,lpSubItem,0L,NULL,REG_OPTION_NON_VOLATILE,KEY_WRITE,NULL,&hAddKey,&dwDisp))
+		{
+			return FALSE;
+		}
+		RegSetValueEx(hAddKey, lpKey, 0L, REG_SZ, (const BYTE *)lpValue, wcslen(lpValue)*2+2); //unicode
+	}
+	else
+	{
+		RegSetValueEx(hAddKey, lpKey, 0L, REG_SZ, (const BYTE *)lpValue, wcslen(lpValue)*2+2); //unicode
+	}
+
+	RegCloseKey(hAddKey);
+	return TRUE;
+}
+
+BOOL CSettingDlg::DeleteRegKey()
+{
+	return TRUE;
+}
+
+//注册到关联文件右键菜单
+void CSettingDlg::OnBnClickedSettingRegisterbutton()
+{
+	TCHAR AppPathName[MAX_PATH]; //最长260
+	GetModuleFileName(NULL, AppPathName, MAX_PATH);
+
+	/*
+	[HKEY_CLASSES_ROOT\.uni]
+	@="UniCue.UNI"
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".uni"),_T(""),_T("UniCue.UNI")))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\.uni]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\UniCue.UNI]
+	@="UniCue 文件"
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI"),_T(""),_T("UniCue 文件")))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\UniCue.UNI]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\UniCue.UNI\shell]
+	@="Open"
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell"),_T(""),_T("Open")))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open]
+	@="使用 UniCue 打开"
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open"),_T(""),_T("使用 UniCue 打开")))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\Open]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open\command]
+	@="\"AppPathName\" \"%1\""
+	*/
+	CString PathValue=_T("\"");
+	PathValue+=AppPathName;
+	PathValue+=_T("\" \"%1\"");
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open\\command"),_T(""),(LPCTSTR)PathValue))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\Open\\command]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue]
+	@="使用 UniCue 转换编码"
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue"),_T(""),_T("使用 UniCue 转换编码")))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\unicue]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue\command]
+	@="\"AppPathName\" \"%1\""
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue\\command"),_T(""),(LPCTSTR)PathValue))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\unicue\\command]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\txtfile\shell\unicue]
+	@="使用 UniCue 转换编码"
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue"),_T(""),_T("使用 UniCue 转换编码")))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\txtfile\\shell\\unicue]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\txtfile\shell\unicue\command]
+	@="\"AppPathName\" \"%1\""
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue\\command"),_T(""),(LPCTSTR)PathValue))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\txtfile\\shell\\unicue\\command]\"失败"));
+
+	//查找cue文件的注册表信息，假定cue已经关联到foobar2000.CUE
+	/*
+	[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue]
+	@="使用 UniCue 转换编码"
+
+	[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue\command]
+	@="\"AppPathName\" \"%1\""
+	*/
+	HKEY hCue;
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue))
+	{
+		//不存在.cue
+		/*
+		[HKEY_CLASSES_ROOT\.cue]
+		@="UniCue.UNI"
+		*/
+		if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".cue"),_T(""),_T("UniCue.UNI")))
+			AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\.cue]\"失败"));
+	}
+	else
+	{
+		//存在.cue
+		DWORD BufferSize=520,ValueType;
+		BYTE *Data = new BYTE[520]; //长度一般不会超过260个字符
+		memset(Data,0,520);
+		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,Data,&BufferSize)==ERROR_SUCCESS)
+		{
+			TRACE(_T("%d"),BufferSize); //BufferSize=键值字串长度*2 +2或+1
+			TRACE(_T("%s"),Data);
+			if (BufferSize%2==0)
+				BufferSize-=2;
+			else
+				BufferSize-=1;
+			if (ValueType!=REG_SZ)
+			{
+				//读取键值出错
+				AddRegKey(HKEY_CLASSES_ROOT,_T(".cue"),_T(""),_T("UniCue.UNI"));
+			}
+			else
+			{
+				BufferSize=BufferSize>>1;
+				WCHAR *CueFileType=new WCHAR[BufferSize+1];
+				memcpy((void*)CueFileType,(void*)Data,BufferSize*2);
+				CueFileType[BufferSize]='\0';
+
+				//假定CueFileType等于Foobar2000.CUE
+				CString CueKeyPath(CueFileType);
+				//AfxMessageBox(CueKeyPath);
+				CueKeyPath+=_T("\\Shell\\unicue");
+				if (!AddRegKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,_T(""),_T("使用 UniCue 转换编码")))
+					AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\foobar2000.CUE\\shell\\unicue\\command]\"失败"));
+				CueKeyPath+=_T("\\command");
+				if (!AddRegKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,_T(""),(LPCTSTR)PathValue))
+					AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\foobar2000.CUE\\shell\\unicue\\command]\"失败"));
+
+				delete []CueFileType;
+			}
+		}
+		delete []Data;
+		RegCloseKey(hCue);
+	}
+
+	/*
+	[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue]
+	@="使用 UniCue 转换编码"
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue"),_T(""),_T("使用 UniCue 转换编码")))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\Applications\\notepad.exe\\shell\\unicue]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue\command]
+	@="\"AppPathName\" \"%1\""
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue\\command"),_T(""),(LPCTSTR)PathValue))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\Applications\\notepad.exe\\shell\\unicue\\command]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\Applications\ANSI2Unicode.exe\shell\open\command]
+	@="\"AppPathName\" \"%1\""
+	*/
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open\\command"),_T(""),(LPCTSTR)PathValue))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\Applications\\ANSI2Unicode.exe\\shell\\open\\command]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\UniCue.UNI\DefaultIcon]
+	@="AppFolder\\icons\\file.ico"
+	*/
+	PathValue=CString(AppPathName);
+	int pos=PathValue.ReverseFind('\\');
+	PathValue=PathValue.Left(pos);
+	PathValue+=_T("\\icons\\uni.ico");
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"),_T(""),(LPCTSTR)PathValue))
+		AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\DefaultIcon]\"失败"));
+
+	/*
+	[HKEY_CLASSES_ROOT\.uni\ShellNew]
+	"FileName"="AppFolder\\null.uni"
+	*/
+	if (m_Config.RegNewUniFile)
+	{
+		PathValue=CString(AppPathName);
+		pos=PathValue.ReverseFind('\\');
+		PathValue=PathValue.Left(pos);
+		PathValue+=_T("\\null.uni");
+		if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"),_T("FileName"),(LPCTSTR)PathValue))
+			AfxMessageBox(_T("创建键值\"[HKEY_CLASSES_ROOT\\Applications\\.uni\\ShellNew\\FileName]\"失败"));
+	}
+
+	//刷新shell的图标缓存
+	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
+
+	//AfxMessageBox(_T("注册完成!"));
+}
+
+//卸载右键菜单关联
+void CSettingDlg::OnBnClickedSettingUnregisterbutton()
+{
+#ifdef WIN32
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"));  //32bit程序
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T(".uni"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open\\command"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue\\command"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue\\command"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue\\command"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open\\command"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell"));
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe"));
+	//卸载cue文件的右键菜单
+	HKEY hCue;
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue)==ERROR_SUCCESS)  //存在.cue
+	{
+		DWORD BufferSize=520,ValueType;
+		BYTE *Data = new BYTE[520]; //长度一般不会超过260个字符
+		memset(Data,0,520);
+		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,Data,&BufferSize)==ERROR_SUCCESS)
+		{
+			if (BufferSize%2==0)
+				BufferSize-=2;
+			else
+				BufferSize-=1;
+			if (ValueType==REG_SZ)
+			{
+				BufferSize=BufferSize>>1;
+				WCHAR *CueFileType=new WCHAR[BufferSize+1];
+				memcpy((void*)CueFileType,(void*)Data,BufferSize*2);
+				CueFileType[BufferSize]='\0';
+				CString CueKeyPath(CueFileType);
+				CueKeyPath+=_T("\\Shell\\unicue\\command");
+				RegDeleteKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath);
+				CueKeyPath=CueKeyPath.Left(CueKeyPath.GetLength()-8);
+				RegDeleteKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath);
+
+				delete []CueFileType;
+			}
+		}
+		delete []Data;
+		RegCloseKey(hCue);
+	}
+#else
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"),KEY_WOW64_32KEY,0L);  //32bit程序
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T(".uni"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open\\command"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue\\command"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue\\command"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue\\command"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open\\command"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell"),KEY_WOW64_32KEY,0L);
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe"),KEY_WOW64_32KEY,0L);
+	//卸载cue文件的右键菜单
+	HKEY hCue;
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue)==ERROR_SUCCESS)  //存在.cue
+	{
+		DWORD BufferSize=520,ValueType;
+		BYTE *Data = new BYTE[520]; //长度一般不会超过260个字符
+		memset(Data,0,520);
+		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,Data,&BufferSize)==ERROR_SUCCESS)
+		{
+			if (BufferSize%2==0)
+				BufferSize-=2;
+			else
+				BufferSize-=1;
+			if (ValueType==REG_SZ)
+			{
+				BufferSize=BufferSize>>1;
+				WCHAR *CueFileType=new WCHAR[BufferSize+1];
+				memcpy((void*)CueFileType,(void*)Data,BufferSize*2);
+				CueFileType[BufferSize]='\0';
+				CString CueKeyPath(CueFileType);
+				CueKeyPath+=_T("\\Shell\\unicue\\command");
+				RegDeleteKeyEx(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,KEY_WOW64_32KEY,0L);
+				CueKeyPath=CueKeyPath.Left(CueKeyPath.GetLength()-8);
+				RegDeleteKeyEx(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,KEY_WOW64_32KEY,0L);
+
+				delete []CueFileType;
+			}
+		}
+		delete []Data;
+		RegCloseKey(hCue);
+	}
+#endif
+
+	//刷新shell的图标缓存
+	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
+}
