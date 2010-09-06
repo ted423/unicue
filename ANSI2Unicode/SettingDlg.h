@@ -12,10 +12,15 @@ public:
 public:
 	CSettingDlg(void);
 	~CSettingDlg(void);
+	BOOL AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lpValue);
+	BOOL DeleteRegKey();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
 
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedSettingRegisterbutton();
+	afx_msg void OnBnClickedSettingUnregisterbutton();
 };

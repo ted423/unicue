@@ -6,9 +6,10 @@
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
 #define IDD_ANSI2UNICODE_DIALOG         102
-#define IDR_MAINFRAME                   128
 #define IDR_MENU1                       129
 #define IDD_SETTING                     130
+#define IDR_MAINFRAME_LITTLE            133
+#define IDR_MAINFRAME_BIG               134
 #define IDC_EDIT_UNICODE                1000
 #define IDC_BUTTON_DO                   1001
 #define IDC_CHECK_AUTOCHECKCODE         1004
@@ -28,7 +29,7 @@
 #define IDC_SETTING_AUTOFIXCHECK        1025
 #define IDC_CHECK_ALWAYSONTOP           1027
 #define IDC_SETTING_CLOSEPROMPTCHECK    1028
-#define IDC_LIST1                       1029
+#define IDC_BUTTON_TRANSFERSTRING       1031
 #define ID_FILE_EXIT                    32774
 #define ID_ABOUT                        32775
 #define ID_FILE_OPTION                  32778
@@ -37,9 +38,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        131
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         1030
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
