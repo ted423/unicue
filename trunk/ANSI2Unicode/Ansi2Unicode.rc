@@ -217,7 +217,6 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME_LITTLE    ICON                    "res\\Ansi2Unicode_48x48.ico"
-IDR_MAINFRAME_BIG       ICON                    "res\\Ansi2Unicode_128x128.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
