@@ -67,7 +67,7 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	m_StringCodeType(CODETYPE_SHIFTJIS),/*m_bConfigLoaded(FALSE),m_bCommandLineOpen(FALSE),*/m_bCueFile(FALSE),m_bTransferString(FALSE)
 {
 	m_hLittleIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_LITTLE);
-	m_hBigIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_BIG);
+	//m_hBigIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_BIG);
 	m_RawString=NULL;
 	m_String=NULL;
 	m_UnicodeString=NULL;
@@ -193,7 +193,7 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 
 	// 设置此对话框的图标。当应用程序主窗口不是对话框时，框架将自动
 	//  执行此操作
-	SetIcon(m_hBigIcon, TRUE);			// 设置大图标
+	SetIcon(m_hLittleIcon, TRUE);		// 设置大图标
 	SetIcon(m_hLittleIcon, FALSE);		// 设置小图标
 
 	// 添加编码选项
@@ -922,6 +922,233 @@ BOOL CAnsi2UnicodeDlg::ExtractInternalCue(CString ExtensionName)
 	return TRUE;
 }
 
+/************************************************************************/
+/* flac文件结构                                                         */
+/* http://flac.sourceforge.net/format.html                              */
+/************************************************************************/
+BOOL CAnsi2UnicodeDlg::ExtractFLACInCue()
+{
+	m_CodeStatus=_T("UTF-8 (Internal Cue File)");
+	m_bNeedConvert=FALSE;
+	m_StringCodeType=CODETYPE_UTF8;
+	((CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE))->SetCurSel(m_StringCodeType);
+	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
+	GetDlgItem(IDC_EDIT_ANSI)->SetWindowText(_T(""));
+	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(_T(""));
+
+	if (m_RawString)
+	{
+		delete []m_RawString;
+		m_RawString=NULL;
+		m_String=NULL;
+	}
+	if (m_UnicodeString)
+	{
+		delete []m_UnicodeString;
+		m_UnicodeString=NULL;
+	}
+
+	if (m_FilePathName==_T(""))
+		return FALSE;
+
+	CFile OpenFile;
+	if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
+	{
+		OpenFile.Close();
+		::AfxMessageBox(_T("打开失败！"),MB_OK);
+		return FALSE;
+	}
+
+	m_FilePathName+=_T(".cue");
+	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("文档编码检测结果：")+m_CodeStatus+_T("\n\n文档路径：")+m_FilePathName);
+	if (OpenFile.GetLength()<1048576) // 小于1M，文档太小了
+	{
+		OpenFile.Close();
+		return FALSE;
+	}
+
+	unsigned char Header[5];
+	memset(Header,0,5);
+	ULONGLONG position=0;
+	//4个字节的头部
+	OpenFile.Read((void*)Header,4);
+	if (strcmp((char*)Header,"fLaC")!=0)
+	{
+		AfxMessageBox(_T("here"));
+
+		return FALSE;
+	}
+
+	unsigned char chr;
+	unsigned char *Buffer=NULL;
+	UINT Length;
+	//4个字节的METADATA_BLOCK_HEADER
+	do 
+	{
+		OpenFile.Read((void*)Header,4);
+		//解析
+		memcpy(&chr,Header,1);
+		//检查最高位是否为1
+		if ((chr&0x80)==0x80)
+		{
+			//最后一个METADATA_BLOCK
+			if ((chr&0x04)==0x04)//是VORBIS_COMMENT
+			{
+				//读取BLOCK长度
+				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
+				//申请空间
+				Buffer=new unsigned char[Length+1];
+				//读取BLOCK DATA
+				OpenFile.Read((void*)Buffer,Length);
+				Buffer[Length]='\0';
+			}
+			break;
+		}
+		else
+		{
+			//不是最后一个METADATA_BLOCK
+			if ((chr&0x04)==0x04)//是VORBIS_COMMENT
+			{
+				//读取BLOCK长度
+				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
+				//申请空间
+				Buffer=new unsigned char[Length+1];
+				//读取BLOCK DATA
+				OpenFile.Read((void*)Buffer,Length);
+				Buffer[Length]='\0';
+				break;
+			}
+			else //不是VORBIS_COMMENT
+			{
+				//读取BLOCK长度
+				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
+				//移动文件指针
+				OpenFile.Seek(Length,CFile::current);
+				position=OpenFile.GetPosition();
+			}
+		}
+	} while(position<=1048576);
+
+	OpenFile.Close();
+	if (!Buffer)
+		return FALSE;
+
+	//查找 Cuesheet 标记,自动机模型,大小写不敏感
+	int state=0,BeginPos=0,EndPos=0;
+	for (UINT i=0;i<Length;++i)
+	{
+		if ((Buffer[i]>=0x41)&&(Buffer[i]<=0x5A))
+			Buffer[i]=Buffer[i]+0x20;
+
+		switch (Buffer[i])
+		{
+		case 'c':
+			state=1;      //C
+			break;
+		case 'u':
+			if (state==1)
+				state=2;  //Cu
+			else
+				state=0;
+			break;
+		case 'e':
+			switch (state)
+			{
+			case 2:
+				state=3;  //Cue
+				break;
+			case 5:
+				state=6;  //Cueshe
+				break;
+			case 6:
+				state=7;  //Cueshee
+				break;
+			default:
+				state=0;
+			}
+			break;
+		case 's':
+			if (state==3)
+				state=4;  //Cues
+			else
+				state=0;
+			break;
+		case 'h':
+			if (state==4)
+				state=5;  //Cuesh
+			else
+				state=0;
+			break;
+		case 't':
+			if (state==7)
+			{
+				state=8;  //Cuesheet
+			}
+			else
+				state=0;
+			break;
+		default:
+			state=0;
+		}
+		if (state==8)
+		{
+			BeginPos=i+2;
+			break;
+		}
+	}
+	if (BeginPos==0)
+	{
+		delete []Buffer;
+		return FALSE;
+	}
+	//查找终止符 0D 0A ? 00 00 00（连续3个终止符以上）
+	state=0;
+	for (int i=BeginPos;i<20480;++i)
+	{
+		switch (Buffer[i])
+		{
+		case '\0':
+			state++;
+			break;
+		default:
+			state=0;
+		}
+		if (state==3)
+		{
+			EndPos=i-3; //指向0D 0A后的第一个字符
+			break;
+		}
+	}
+
+	if (EndPos<=1)
+	{
+		delete []Buffer;
+		return FALSE;
+	}
+
+	if ((Buffer[EndPos-2]=='\x0D')&&(Buffer[EndPos-1]=='\x0A'))
+		EndPos--;
+
+	int CueLength=EndPos-BeginPos+1;
+	if (CueLength<=10) //too short
+	{
+		delete []Buffer;
+		return FALSE;
+	}
+
+	m_RawStringLength=CueLength;
+	m_RawString=new char[m_RawStringLength+1];
+	memcpy(m_RawString,Buffer+BeginPos,m_RawStringLength);
+	m_RawString[m_RawStringLength]='\0';
+	m_String=m_RawString;
+	m_StringLength=m_RawStringLength;
+
+	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+
+	delete []Buffer;
+	return TRUE;
+}
+
 void CAnsi2UnicodeDlg::OnFileOpen()
 {
 	CFileDialog openFile(TRUE,_T("*.txt"),NULL,OFN_EXTENSIONDIFFERENT|OFN_FILEMUSTEXIST|OFN_PATHMUSTEXIST,_T("文本文件(*.txt;*.cue;*.log)|*.txt;*.cue;*.log|txt文本文件(*.txt)|*.txt|cue文件(*.cue)|*.cue|log文件(*.log)|*.log|All Files (*.*)|*.*||"));
@@ -994,7 +1221,8 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			{
 				if (m_Config.AcceptDragTAK)
 				{
-					ExtractInternalCue(ExtensionName);
+					//ExtractInternalCue(ExtensionName);
+					ExtractFLACInCue();
 				}
 				else
 				{

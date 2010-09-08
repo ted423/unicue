@@ -247,7 +247,6 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 //卸载右键菜单关联
 void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 {
-#ifdef WIN32
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"));  //32bit程序
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T(".uni"));
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"));
@@ -296,7 +295,8 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 		delete []Data;
 		RegCloseKey(hCue);
 	}
-#else
+
+	/*
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"),KEY_WOW64_32KEY,0L);  //32bit程序
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T(".uni"),KEY_WOW64_32KEY,0L);
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"),KEY_WOW64_32KEY,0L);
@@ -345,7 +345,7 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 		delete []Data;
 		RegCloseKey(hCue);
 	}
-#endif
+	*/
 
 	//刷新shell的图标缓存
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);

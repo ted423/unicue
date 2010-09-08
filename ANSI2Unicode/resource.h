@@ -8,8 +8,9 @@
 #define IDD_ANSI2UNICODE_DIALOG         102
 #define IDR_MENU1                       129
 #define IDD_SETTING                     130
-#define IDR_MAINFRAME_LITTLE            133
-#define IDR_MAINFRAME_BIG               134
+#define IDI_ICON1                       136
+#define IDR_MAINFRAME_LITTLE            136
+#define IDI_ICON2                       137
 #define IDC_EDIT_UNICODE                1000
 #define IDC_BUTTON_DO                   1001
 #define IDC_CHECK_AUTOCHECKCODE         1004
@@ -38,7 +39,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        135
+#define _APS_NEXT_RESOURCE_VALUE        138
 #define _APS_NEXT_COMMAND_VALUE         32779
 #define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101
