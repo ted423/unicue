@@ -489,6 +489,14 @@
 				RelativePath=".\res\Ansi2Unicode_48x48.ico"
 				>
 			</File>
+			<File
+				RelativePath=".\res\Ansi2Unicode_64x64.png"
+				>
+			</File>
+			<File
+				RelativePath=".\res\png1.bin"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

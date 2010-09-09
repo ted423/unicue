@@ -11,6 +11,7 @@
 #define IDI_ICON1                       136
 #define IDR_MAINFRAME_LITTLE            136
 #define IDI_ICON2                       137
+#define IDR_PNG1                        139
 #define IDC_EDIT_UNICODE                1000
 #define IDC_BUTTON_DO                   1001
 #define IDC_CHECK_AUTOCHECKCODE         1004
@@ -24,13 +25,13 @@
 #define IDC_SETTING_REGISTERBUTTON      1018
 #define IDC_SETTING_UNREGISTERBUTTON    1019
 #define IDC_SETTING_EDIT                1020
-#define IDC_SETTING_FLACCHECK           1021
-#define IDC_SETTING_TAKCHECK            1022
-#define IDC_SETTING_APECHECK            1023
+#define IDC_SETTING_INCUECHECK          1021
 #define IDC_SETTING_AUTOFIXCHECK        1025
 #define IDC_CHECK_ALWAYSONTOP           1027
 #define IDC_SETTING_CLOSEPROMPTCHECK    1028
 #define IDC_BUTTON_TRANSFERSTRING       1031
+#define IDC_TXTUTF8_BUTTON              1032
+#define IDC_TXTOLDSTYLE_BUTTON          1033
 #define ID_FILE_EXIT                    32774
 #define ID_ABOUT                        32775
 #define ID_FILE_OPTION                  32778
@@ -39,9 +40,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        138
-#define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         1032
+#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_COMMAND_VALUE         32781
+#define _APS_NEXT_CONTROL_VALUE         1034
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

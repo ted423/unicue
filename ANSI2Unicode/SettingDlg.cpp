@@ -19,15 +19,15 @@ void CSettingDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SETTING_EDIT, m_Config.TemplateStr);
 	DDX_Check(pDX, IDC_SETTING_AUTOFIXCHECK,m_Config.AutoFixCue);
 	DDX_Check(pDX, IDC_SETTING_REPLACECHECK, m_Config.AutoFixTTA);
-	DDX_Check(pDX, IDC_SETTING_FLACCHECK, m_Config.AcceptDragFLAC);
-	DDX_Check(pDX, IDC_SETTING_TAKCHECK, m_Config.AcceptDragTAK);
-	DDX_Check(pDX, IDC_SETTING_APECHECK, m_Config.AcceptDragAPE);
+	DDX_Check(pDX, IDC_SETTING_INCUECHECK, m_Config.AcceptDragAudioFile);
 	DDX_Check(pDX, IDC_SETTING_CLOSEPROMPTCHECK, m_Config.CloseCuePrompt);
 }
 
 BEGIN_MESSAGE_MAP(CSettingDlg, CDialog)
 	ON_BN_CLICKED(IDC_SETTING_REGISTERBUTTON, &CSettingDlg::OnBnClickedSettingRegisterbutton)
 	ON_BN_CLICKED(IDC_SETTING_UNREGISTERBUTTON, &CSettingDlg::OnBnClickedSettingUnregisterbutton)
+	ON_BN_CLICKED(IDC_TXTUTF8_BUTTON, &CSettingDlg::OnBnClickedTxtutf8Button)
+	ON_BN_CLICKED(IDC_TXTOLDSTYLE_BUTTON, &CSettingDlg::OnBnClickedTxtoldstyleButton)
 END_MESSAGE_MAP()
 
 //写注册表值默认类型是REG_SZ
@@ -349,4 +349,14 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 
 	//刷新shell的图标缓存
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
+}
+
+void CSettingDlg::OnBnClickedTxtutf8Button()
+{
+	// TODO: 在此添加控件通知处理程序代码
+}
+
+void CSettingDlg::OnBnClickedTxtoldstyleButton()
+{
+	// TODO: 在此添加控件通知处理程序代码
 }

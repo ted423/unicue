@@ -17,9 +17,7 @@ typedef struct CConfig_tag
 	CString TemplateStr;                   //命名模板
 	BOOL AutoFixCue;                       //自动修正cue中的音频文件扩展名
 	BOOL AutoFixTTA;                       //自动修正旧式TTA标签
-	BOOL AcceptDragFLAC;                   //接受拖曳flac提取内嵌cue
-	BOOL AcceptDragTAK;                    //接受拖曳tak提取内嵌cue
-	BOOL AcceptDragAPE;                    //接受拖曳ape提取内嵌cue
+	BOOL AcceptDragAudioFile;              //接受拖曳音频文档提取内嵌cue
 	BOOL AutoCheckCode;                    //是否自动检查编码
 	BOOL AlwaysOnTop;                      //是否总在最前
 	BOOL CloseCuePrompt;                   //是否关闭cue文件有错误的提示
@@ -71,8 +69,8 @@ protected:
 	void FixTTACue();
 	BOOL SetDialogPos();
 	BOOL DealFile();
-	BOOL ExtractInternalCue(CString ExtensionName);
-	BOOL ExtractFLACInCue();
+	BOOL ExtractTakInternalCue(CString ExtensionName);
+	BOOL ExtractFlacInternalCue(CString ExtensionName);
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
