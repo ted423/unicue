@@ -28,16 +28,18 @@ public:
 
 // 对话框数据
 	enum { IDD = IDD_ABOUTBOX };
-	CHyperLink m_link;
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	CImage m_png;
+	CHyperLink m_link;
 
 // 实现
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
+	afx_msg void OnPaint();
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -52,12 +54,69 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BOOL CAboutDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+
+	//用CImage加载：流或文件
+	HGLOBAL        hGlobal = NULL;
+	HRSRC          hSource = NULL;
+	int            nSize   = 0;
+
+	hSource = FindResource(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_PNG1), _T("PNG"));
+	if (hSource == NULL)
+		return TRUE;
+	hGlobal = LoadResource(AfxGetResourceHandle(), hSource);
+	if (hGlobal == NULL)
+	{
+		FreeResource(hGlobal);
+		return TRUE;
+	}
+	IStream* pStream = NULL;
+
+	nSize = (UINT)SizeofResource(AfxGetResourceHandle(), hSource);
+	HGLOBAL hGlobal2 = GlobalAlloc(GMEM_MOVEABLE, nSize);
+	if(hGlobal2 == NULL)
+	{
+		FreeResource(hGlobal);
+		return TRUE;
+	}
+
+	void* pData = GlobalLock(hGlobal2);
+	memcpy(pData, (void *)hGlobal, nSize);
+	GlobalUnlock(hGlobal2);
+	if(CreateStreamOnHGlobal(hGlobal2, TRUE, &pStream) == S_OK)
+	{
+		m_png.Load(pStream);
+		pStream->Release();
+	}
+	FreeResource(hGlobal2); 
+	FreeResource(hGlobal);
+
 	m_link.Attach(GetDlgItem(IDC_STATIC_KUYUR)->GetSafeHwnd());
 
 	return TRUE;
 }
 
+void CAboutDlg::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+
+	if (m_png.IsNull())
+		return;
+
+	for(int i = 0; i < m_png.GetWidth(); ++i)
+	{
+		for(int j = 0; j < m_png.GetHeight(); ++j)
+		{
+			unsigned char* pucColor = (unsigned char *)m_png.GetPixelAddress(i , j);
+			pucColor[0] = pucColor[0] * pucColor[3] / 255;
+			pucColor[1] = pucColor[1] * pucColor[3] / 255;
+			pucColor[2] = pucColor[2] * pucColor[3] / 255;
+		}
+	}
+	m_png.AlphaBlend(dc.GetSafeHdc(),8,8); //透明显示
+}
+
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
 
@@ -96,9 +155,7 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 			m_Config.TemplateStr=_T(".utf-8");
 			m_Config.AutoFixCue=TRUE;
 			m_Config.AutoFixTTA=FALSE;
-			m_Config.AcceptDragFLAC=TRUE;
-			m_Config.AcceptDragAPE=TRUE;
-			m_Config.AcceptDragTAK=TRUE;
+			m_Config.AcceptDragAudioFile=TRUE;
 			m_Config.AutoCheckCode=TRUE;
 			m_Config.AlwaysOnTop=TRUE;
 			m_Config.CloseCuePrompt=FALSE;
@@ -111,9 +168,7 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 		m_Config.TemplateStr=_T(".utf-8");
 		m_Config.AutoFixCue=TRUE;
 		m_Config.AutoFixTTA=FALSE;
-		m_Config.AcceptDragFLAC=TRUE;
-		m_Config.AcceptDragAPE=TRUE;
-		m_Config.AcceptDragTAK=TRUE;
+		m_Config.AcceptDragAudioFile=TRUE;
 		m_Config.AutoCheckCode=TRUE;
 		m_Config.AlwaysOnTop=TRUE;
 		m_Config.CloseCuePrompt=FALSE;
@@ -147,20 +202,20 @@ BEGIN_MESSAGE_MAP(CAnsi2UnicodeDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_DESTROY()
+	ON_WM_DROPFILES()
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_FILE_EXIT, &CAnsi2UnicodeDlg::OnFileExit)
 	ON_COMMAND(ID_ABOUT, &CAnsi2UnicodeDlg::OnAbout)
 	ON_COMMAND(ID_FILE_OPEN, &CAnsi2UnicodeDlg::OnFileOpen)
 	ON_COMMAND(ID_FILE_SAVE, &CAnsi2UnicodeDlg::OnFileSave)
-	ON_BN_CLICKED(IDC_BUTTON_DO, &CAnsi2UnicodeDlg::OnBnClickedButtonDo)
-	ON_WM_DROPFILES()
+	ON_COMMAND(ID_FILE_OPTION, &CAnsi2UnicodeDlg::OnFileOption)
 	ON_CBN_SELCHANGE(IDC_COMBO_SELECTCODE, &CAnsi2UnicodeDlg::OnCbnSelchangeComboSelectcode)
+	ON_BN_CLICKED(IDC_BUTTON_DO, &CAnsi2UnicodeDlg::OnBnClickedButtonDo)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CAnsi2UnicodeDlg::OnBnClickedButtonSave)
 	ON_BN_CLICKED(IDC_BUTTON_SAVEAS, &CAnsi2UnicodeDlg::OnBnClickedButtonSaveas)
 	ON_BN_CLICKED(IDC_CHECK_AUTOCHECKCODE, &CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode)
-	ON_COMMAND(ID_FILE_OPTION, &CAnsi2UnicodeDlg::OnFileOption)
 	ON_BN_CLICKED(IDC_CHECK_ALWAYSONTOP, &CAnsi2UnicodeDlg::OnBnClickedCheckAlwaysontop)
-	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_BUTTON_TRANSFERSTRING, &CAnsi2UnicodeDlg::OnBnClickedButtonTransferstring)
 END_MESSAGE_MAP()
 
@@ -220,12 +275,15 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 		if (m_FilePathName.GetAt(m_FilePathName.GetLength()-1)==_T('\"'))
 			m_FilePathName=m_FilePathName.Left(m_FilePathName.GetLength()-1);
 		CString ExtensionName;
-		ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1);
+		ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1).MakeLower();
 		if ((ExtensionName==_T("tak"))||(ExtensionName==_T("flac"))||(ExtensionName==_T("ape")))
 		{
-			if (m_Config.AcceptDragTAK)
+			if (m_Config.AcceptDragAudioFile)
 			{
-				ExtractInternalCue(ExtensionName);
+				if (ExtensionName==_T("tak"))
+					ExtractTakInternalCue(ExtensionName);
+				else if (ExtensionName==_T("flac"))
+					ExtractFlacInternalCue(ExtensionName);
 			}
 			else
 			{
@@ -312,32 +370,14 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	else
 		m_Config.AutoFixTTA=FALSE;
 
-	//AcceptDragFLAC节点
-	pElem=hXmlHandle.FirstChild("AcceptDragFLAC").Element();
+	//AcceptDragAudioFile节点
+	pElem=hXmlHandle.FirstChild("AcceptDragAudioFile").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
 	if (_stricmp(pElem->GetText(),"true")==0)
-		m_Config.AcceptDragFLAC=TRUE;
+		m_Config.AcceptDragAudioFile=TRUE;
 	else
-		m_Config.AcceptDragFLAC=FALSE;
-
-	//AcceptDragTAK节点
-	pElem=hXmlHandle.FirstChild("AcceptDragTAK").Element();
-	if (!pElem) return FALSE;
-	if (!pElem->GetText()) return FALSE;
-	if (_stricmp(pElem->GetText(),"true")==0)
-		m_Config.AcceptDragTAK=TRUE;
-	else
-		m_Config.AcceptDragTAK=FALSE;
-
-	//AcceptDragAPE节点
-	pElem=hXmlHandle.FirstChild("AcceptDragAPE").Element();
-	if (!pElem) return FALSE;
-	if (!pElem->GetText()) return FALSE;
-	if (_stricmp(pElem->GetText(),"true")==0)
-		m_Config.AcceptDragAPE=TRUE;
-	else
-		m_Config.AcceptDragAPE=FALSE;
+		m_Config.AcceptDragAudioFile=FALSE;
 
 	//CloseCuePrompt节点
 	pElem=hXmlHandle.FirstChild("CloseCuePrompt").Element();
@@ -391,20 +431,10 @@ BOOL CAnsi2UnicodeDlg::CreateConfigFile()
 	AutoFixTTA->LinkEndChild(AutoFixTTAValue);
 	configure->LinkEndChild(AutoFixTTA);
 
-	TiXmlElement *AcceptDragFLAC=new TiXmlElement("AcceptDragFLAC");
-	TiXmlText *AcceptDragFLACValue=new TiXmlText("true");
-	AcceptDragFLAC->LinkEndChild(AcceptDragFLACValue);
-	configure->LinkEndChild(AcceptDragFLAC);
-
-	TiXmlElement *AcceptDragTAK=new TiXmlElement("AcceptDragTAK");
-	TiXmlText *AcceptDragTAKValue=new TiXmlText("true");
-	AcceptDragTAK->LinkEndChild(AcceptDragTAKValue);
-	configure->LinkEndChild(AcceptDragTAK);
-
-	TiXmlElement *AcceptDragAPE=new TiXmlElement("AcceptDragAPE");
-	TiXmlText *AcceptDragAPEValue=new TiXmlText("true");
-	AcceptDragAPE->LinkEndChild(AcceptDragAPEValue);
-	configure->LinkEndChild(AcceptDragAPE);
+	TiXmlElement *AcceptDragAudioFile=new TiXmlElement("AcceptDragAudioFile");
+	TiXmlText *AcceptDragAudioFileValue=new TiXmlText("true");
+	AcceptDragAudioFile->LinkEndChild(AcceptDragAudioFileValue);
+	configure->LinkEndChild(AcceptDragAudioFile);
 
 	TiXmlElement *CloseCuePrompt=new TiXmlElement("CloseCuePrompt");
 	TiXmlText *CloseCuePromptValue=new TiXmlText("false");
@@ -471,32 +501,14 @@ BOOL CAnsi2UnicodeDlg::SaveConfigFile()
 	AutoFixTTA->LinkEndChild(AutoFixTTAValue);
 	configure->LinkEndChild(AutoFixTTA);
 
-	TiXmlElement *AcceptDragFLAC=new TiXmlElement("AcceptDragFLAC");
-	TiXmlText *AcceptDragFLACValue;
-	if (m_Config.AcceptDragFLAC)
-		AcceptDragFLACValue=new TiXmlText("true");
+	TiXmlElement *AcceptDragAudioFile=new TiXmlElement("AcceptDragAudioFile");
+	TiXmlText *AcceptDragAudioFileValue;
+	if (m_Config.AcceptDragAudioFile)
+		AcceptDragAudioFileValue=new TiXmlText("true");
 	else
-		AcceptDragFLACValue=new TiXmlText("false");
-	AcceptDragFLAC->LinkEndChild(AcceptDragFLACValue);
-	configure->LinkEndChild(AcceptDragFLAC);
-
-	TiXmlElement *AcceptDragTAK=new TiXmlElement("AcceptDragTAK");
-	TiXmlText *AcceptDragTAKValue;
-	if (m_Config.AcceptDragTAK)
-		AcceptDragTAKValue=new TiXmlText("true");
-	else
-		AcceptDragTAKValue=new TiXmlText("false");
-	AcceptDragTAK->LinkEndChild(AcceptDragTAKValue);
-	configure->LinkEndChild(AcceptDragTAK);
-
-	TiXmlElement *AcceptDragAPE=new TiXmlElement("AcceptDragAPE");
-	TiXmlText *AcceptDragAPEValue;
-	if (m_Config.AcceptDragAPE)
-		AcceptDragAPEValue=new TiXmlText("true");
-	else
-		AcceptDragAPEValue=new TiXmlText("false");
-	AcceptDragAPE->LinkEndChild(AcceptDragAPEValue);
-	configure->LinkEndChild(AcceptDragAPE);
+		AcceptDragAudioFileValue=new TiXmlText("false");
+	AcceptDragAudioFile->LinkEndChild(AcceptDragAudioFileValue);
+	configure->LinkEndChild(AcceptDragAudioFile);
 
 	TiXmlElement *CloseCuePrompt=new TiXmlElement("CloseCuePrompt");
 	TiXmlText *CloseCuePromptValue;
@@ -764,7 +776,7 @@ BOOL CAnsi2UnicodeDlg::DealFile()
 	return TRUE;
 }
 
-BOOL CAnsi2UnicodeDlg::ExtractInternalCue(CString ExtensionName)
+BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString ExtensionName)
 {
 	m_CodeStatus=_T("UTF-8 (Internal Cue File)");
 	m_bNeedConvert=FALSE;
@@ -922,11 +934,9 @@ BOOL CAnsi2UnicodeDlg::ExtractInternalCue(CString ExtensionName)
 	return TRUE;
 }
 
-/************************************************************************/
-/* flac文件结构                                                         */
-/* http://flac.sourceforge.net/format.html                              */
-/************************************************************************/
-BOOL CAnsi2UnicodeDlg::ExtractFLACInCue()
+// flac文件结构
+// http://flac.sourceforge.net/format.html
+BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString ExtensionName)
 {
 	m_CodeStatus=_T("UTF-8 (Internal Cue File)");
 	m_bNeedConvert=FALSE;
@@ -974,8 +984,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFLACInCue()
 	OpenFile.Read((void*)Header,4);
 	if (strcmp((char*)Header,"fLaC")!=0)
 	{
-		AfxMessageBox(_T("here"));
-
+		//AfxMessageBox(_T("Not real flac file!"));
 		return FALSE;
 	}
 
@@ -1142,10 +1151,11 @@ BOOL CAnsi2UnicodeDlg::ExtractFLACInCue()
 	m_RawString[m_RawStringLength]='\0';
 	m_String=m_RawString;
 	m_StringLength=m_RawStringLength;
+	delete []Buffer;
 
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+	FixInternalCue(ExtensionName);
 
-	delete []Buffer;
 	return TRUE;
 }
 
@@ -1156,12 +1166,15 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 	{
 		m_FilePathName=openFile.GetPathName();
 		CString ExtensionName;
-		ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1);
+		ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1).MakeLower();
 		if ((ExtensionName==_T("tak"))||(ExtensionName==_T("flac"))||(ExtensionName==_T("ape")))
 		{
-			if (m_Config.AcceptDragTAK)
+			if (m_Config.AcceptDragAudioFile)
 			{
-				ExtractInternalCue(ExtensionName);
+				if (ExtensionName==_T("tak"))
+					ExtractTakInternalCue(ExtensionName);
+				else if (ExtensionName==_T("flac"))
+					ExtractFlacInternalCue(ExtensionName);
 			}
 			else
 			{
@@ -1216,13 +1229,15 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			::DragQueryFile(hDropInfo, 0, szFileName, MAX_PATH);
 			m_FilePathName=CString(szFileName);
 			CString ExtensionName;
-			ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1);
+			ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1).MakeLower();
 			if ((ExtensionName==_T("tak"))||(ExtensionName==_T("flac"))||(ExtensionName==_T("ape")))
 			{
-				if (m_Config.AcceptDragTAK)
+				if (m_Config.AcceptDragAudioFile)
 				{
-					//ExtractInternalCue(ExtensionName);
-					ExtractFLACInCue();
+					if (ExtensionName==_T("tak"))
+						ExtractTakInternalCue(ExtensionName);
+					else if (ExtensionName==_T("flac"))
+						ExtractFlacInternalCue(ExtensionName);
 				}
 				else
 				{

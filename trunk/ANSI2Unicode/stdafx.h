@@ -36,6 +36,7 @@
 #define _AFX_ALL_WARNINGS
 
 #include <afxwin.h>         // MFC 核心组件和标准组件
+#include <atlimage.h>       // CImage类
 #include <afxext.h>         // MFC 扩展
 #include <afxdisp.h>        // MFC 自动化类
 

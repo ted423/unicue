@@ -62,14 +62,13 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 235, 55
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 53
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "关于 Ansi2Unicode"
 FONT 9, "宋体", 0, 0, 0x1
 BEGIN
-    ICON            128,IDC_STATIC,11,17,20,20
-    LTEXT           "Ansi2Unicode 1.0.3",IDC_STATIC,40,11,119,8,SS_NOPREFIX
-    LTEXT           "http://kuyur.info/blog",IDC_STATIC_KUYUR,40,26,188,11
+    LTEXT           "Ansi2Unicode 1.0.3",IDC_STATIC,51,11,99,8,SS_NOPREFIX
+    LTEXT           "http://kuyur.info/blog",IDC_STATIC_KUYUR,51,26,100,11
     DEFPUSHBUTTON   "确定",IDOK,178,7,50,16,WS_GROUP
 END
 
@@ -101,18 +100,19 @@ BEGIN
     CONTROL         "自动修正cue文件中的音频扩展名",IDC_SETTING_AUTOFIXCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,43,131,10
     CONTROL         "替换cue文件FILE行""The True Audio""为""WAVE""",IDC_SETTING_REPLACECHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,57,167,10
-    CONTROL         "提取flac的内嵌cue",IDC_SETTING_FLACCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,71,79,10
-    CONTROL         "提取tak的内嵌cue",IDC_SETTING_TAKCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,85,77,10
-    CONTROL         "提取ape的内嵌cue",IDC_SETTING_APECHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,99,79,10
-    PUSHBUTTON      "注册右键菜单关联",IDC_SETTING_REGISTERBUTTON,59,151,122,14
-    PUSHBUTTON      "卸载右键菜单",IDC_SETTING_UNREGISTERBUTTON,59,167,122,14
+    CONTROL         "提取音频文档(flac/tak/ape)的内嵌cue",IDC_SETTING_INCUECHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,71,143,10
+    PUSHBUTTON      "注册右键菜单关联",IDC_SETTING_REGISTERBUTTON,59,121,122,14
+    PUSHBUTTON      "卸载右键菜单",IDC_SETTING_UNREGISTERBUTTON,59,137,122,14
     DEFPUSHBUTTON   "确定",IDOK,53,195,50,14
     PUSHBUTTON      "取消",IDCANCEL,137,195,50,14
     LTEXT           "另存文件的命名模板：原文件名",IDC_STATIC,25,22,113,8
-    GROUPBOX        "文本文件",IDC_STATIC,7,7,227,123
-    GROUPBOX        "右键菜单",IDC_STATIC,7,138,227,51
+    GROUPBOX        "文本文件",IDC_STATIC,7,4,227,96
+    GROUPBOX        "右键菜单",IDC_STATIC,7,106,227,87
     LTEXT           ".扩展名",IDC_STATIC,186,22,28,8
-    CONTROL         "关闭cue文件出错时的提示",IDC_SETTING_CLOSEPROMPTCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,113,107,10
+    CONTROL         "关闭cue文件出错时的提示",IDC_SETTING_CLOSEPROMPTCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,85,107,10
+    PUSHBUTTON      "新建utf-8编码的文本文档",IDC_TXTUTF8_BUTTON,59,153,122,14
+    PUSHBUTTON      "还原为默认的新建文本文档",IDC_TXTOLDSTYLE_BUTTON,59,169,122,14
 END
 
 
@@ -169,7 +169,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 228
         TOPMARGIN, 7
-        BOTTOMMARGIN, 48
+        BOTTOMMARGIN, 46
     END
 
     IDD_ANSI2UNICODE_DIALOG, DIALOG
@@ -217,6 +217,13 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME_LITTLE    ICON                    "res\\Ansi2Unicode_48x48.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// PNG
+//
+
+IDR_PNG1                PNG                     "res\\Ansi2Unicode_64x64.png"
 
 /////////////////////////////////////////////////////////////////////////////
 //

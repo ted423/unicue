@@ -23,4 +23,6 @@ protected:
 public:
 	afx_msg void OnBnClickedSettingRegisterbutton();
 	afx_msg void OnBnClickedSettingUnregisterbutton();
+	afx_msg void OnBnClickedTxtutf8Button();
+	afx_msg void OnBnClickedTxtoldstyleButton();
 };
