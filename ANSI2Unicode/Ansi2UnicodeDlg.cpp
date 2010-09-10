@@ -274,16 +274,17 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 			m_FilePathName.Delete(0,1);
 		if (m_FilePathName.GetAt(m_FilePathName.GetLength()-1)==_T('\"'))
 			m_FilePathName=m_FilePathName.Left(m_FilePathName.GetLength()-1);
-		CString ExtensionName;
+		CString ExtensionName,FileName;
 		ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1).MakeLower();
+		FileName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('\\')-1);
 		if ((ExtensionName==_T("tak"))||(ExtensionName==_T("flac"))||(ExtensionName==_T("ape")))
 		{
 			if (m_Config.AcceptDragAudioFile)
 			{
-				if (ExtensionName==_T("tak"))
-					ExtractTakInternalCue(ExtensionName);
-				else if (ExtensionName==_T("flac"))
-					ExtractFlacInternalCue(ExtensionName);
+				if (ExtensionName==_T("flac"))
+					ExtractFlacInternalCue(FileName);
+				else if ((ExtensionName==_T("tak"))||(ExtensionName==_T("ape")))
+					ExtractTakInternalCue(FileName);
 			}
 			else
 			{
@@ -776,7 +777,7 @@ BOOL CAnsi2UnicodeDlg::DealFile()
 	return TRUE;
 }
 
-BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString ExtensionName)
+BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString AudioFileName)
 {
 	m_CodeStatus=_T("UTF-8 (Internal Cue File)");
 	m_bNeedConvert=FALSE;
@@ -929,14 +930,14 @@ BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString ExtensionName)
 
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
 
-	FixInternalCue(ExtensionName);
+	FixInternalCue(AudioFileName);
 
 	return TRUE;
 }
 
 // flac文件结构
 // http://flac.sourceforge.net/format.html
-BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString ExtensionName)
+BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 {
 	m_CodeStatus=_T("UTF-8 (Internal Cue File)");
 	m_bNeedConvert=FALSE;
@@ -1154,7 +1155,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString ExtensionName)
 	delete []Buffer;
 
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
-	FixInternalCue(ExtensionName);
+	FixInternalCue(AudioFileName);
 
 	return TRUE;
 }
@@ -1165,16 +1166,17 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 	if (openFile.DoModal() == IDOK)
 	{
 		m_FilePathName=openFile.GetPathName();
-		CString ExtensionName;
+		CString ExtensionName,FileName;
 		ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1).MakeLower();
+		FileName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('\\')-1);
 		if ((ExtensionName==_T("tak"))||(ExtensionName==_T("flac"))||(ExtensionName==_T("ape")))
 		{
 			if (m_Config.AcceptDragAudioFile)
 			{
-				if (ExtensionName==_T("tak"))
-					ExtractTakInternalCue(ExtensionName);
-				else if (ExtensionName==_T("flac"))
-					ExtractFlacInternalCue(ExtensionName);
+				if (ExtensionName==_T("flac"))
+					ExtractFlacInternalCue(FileName);
+				else if ((ExtensionName==_T("tak"))||(ExtensionName==_T("ape")))
+					ExtractTakInternalCue(FileName);
 			}
 			else
 			{
@@ -1228,16 +1230,17 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 			TCHAR szFileName[MAX_PATH+1];
 			::DragQueryFile(hDropInfo, 0, szFileName, MAX_PATH);
 			m_FilePathName=CString(szFileName);
-			CString ExtensionName;
+			CString ExtensionName,FileName;
 			ExtensionName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('.')-1).MakeLower();
+			FileName=m_FilePathName.Right(m_FilePathName.GetLength()-m_FilePathName.ReverseFind('\\')-1);
 			if ((ExtensionName==_T("tak"))||(ExtensionName==_T("flac"))||(ExtensionName==_T("ape")))
 			{
 				if (m_Config.AcceptDragAudioFile)
 				{
-					if (ExtensionName==_T("tak"))
-						ExtractTakInternalCue(ExtensionName);
-					else if (ExtensionName==_T("flac"))
-						ExtractFlacInternalCue(ExtensionName);
+					if (ExtensionName==_T("flac"))
+						ExtractFlacInternalCue(FileName);
+					else if ((ExtensionName==_T("tak"))||(ExtensionName==_T("ape")))
+						ExtractTakInternalCue(FileName);
 				}
 				else
 				{
@@ -1650,7 +1653,7 @@ void CAnsi2UnicodeDlg::FixCue()
 	}
 }
 
-void CAnsi2UnicodeDlg::FixInternalCue(CString ExtensionName)
+void CAnsi2UnicodeDlg::FixInternalCue(CString AudioFileName)
 {
 	CString CueString;
 	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(CueString);
@@ -1673,12 +1676,9 @@ void CAnsi2UnicodeDlg::FixInternalCue(CString ExtensionName)
 		return;
 	}
 
-	CString MusicFileName; //音频文件名
-	MusicFileName=CueString.Mid(BeginPos,EndPos-BeginPos);
-	CString NewMusicFileName;
-	NewMusicFileName=MusicFileName.Left(MusicFileName.ReverseFind('.')+1);
-	NewMusicFileName+=ExtensionName;
-	CueString.Replace(MusicFileName,NewMusicFileName);
+	CString OldFileName; //音频文件名
+	OldFileName=CueString.Mid(BeginPos,EndPos-BeginPos);
+	CueString.Replace(OldFileName,AudioFileName);
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
 }
 
