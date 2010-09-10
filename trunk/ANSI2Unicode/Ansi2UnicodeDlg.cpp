@@ -1001,7 +1001,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString ExtensionName)
 		if ((chr&0x80)==0x80)
 		{
 			//最后一个METADATA_BLOCK
-			if ((chr&0x04)==0x04)//是VORBIS_COMMENT
+			if ((chr&0x7F)==0x04)//是VORBIS_COMMENT
 			{
 				//读取BLOCK长度
 				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
@@ -1016,7 +1016,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString ExtensionName)
 		else
 		{
 			//不是最后一个METADATA_BLOCK
-			if ((chr&0x04)==0x04)//是VORBIS_COMMENT
+			if ((chr&0x7F)==0x04)//是VORBIS_COMMENT
 			{
 				//读取BLOCK长度
 				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
