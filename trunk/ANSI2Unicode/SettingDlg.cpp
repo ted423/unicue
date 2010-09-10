@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(CSettingDlg, CDialog)
 END_MESSAGE_MAP()
 
 //写注册表值默认类型是REG_SZ
-BOOL CSettingDlg::AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lpValue)
+BOOL CSettingDlg::AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lpValue,DWORD dwType)
 {
 	HKEY hAddKey;
 	DWORD dwDisp; //存放新建子项时的返回类型
@@ -42,11 +42,11 @@ BOOL CSettingDlg::AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lp
 		{
 			return FALSE;
 		}
-		RegSetValueEx(hAddKey, lpKey, 0L, REG_SZ, (const BYTE *)lpValue, wcslen(lpValue)*2+2); //unicode
+		RegSetValueEx(hAddKey, lpKey, 0L, dwType, (const BYTE *)lpValue, wcslen(lpValue)*2+2); //unicode
 	}
 	else
 	{
-		RegSetValueEx(hAddKey, lpKey, 0L, REG_SZ, (const BYTE *)lpValue, wcslen(lpValue)*2+2); //unicode
+		RegSetValueEx(hAddKey, lpKey, 0L, dwType, (const BYTE *)lpValue, wcslen(lpValue)*2+2); //unicode
 	}
 
 	RegCloseKey(hAddKey);
@@ -235,7 +235,7 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 		PathValue=PathValue.Left(pos);
 		PathValue+=_T("\\null.uni");
 		if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"),_T("FileName"),(LPCTSTR)PathValue))
-			AfxMessageBox(_T("创建键值\"[HKEY_CLASSES_ROOT\\Applications\\.uni\\ShellNew\\FileName]\"失败"));
+			AfxMessageBox(_T("创建键值\"[HKEY_CLASSES_ROOT\\.uni\\ShellNew\\FileName]\"失败"));
 	}
 
 	//刷新shell的图标缓存
@@ -353,10 +353,31 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 
 void CSettingDlg::OnBnClickedTxtutf8Button()
 {
-	// TODO: 在此添加控件通知处理程序代码
+	// 删除[HKEY_CLASSES_ROOT\.txt\ShellNew] 下的键值
+	HKEY hKey;
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".txt\\ShellNew"),0L,KEY_ALL_ACCESS,&hKey)==ERROR_SUCCESS)
+		RegDeleteValue(hKey,_T("NullFile"));
+	/*
+	[HKEY_CLASSES_ROOT\.txt\ShellNew]
+	"FileName"="AppFolder\\null.uni"
+	*/
+	TCHAR AppPathName[MAX_PATH]; //最长260
+	GetModuleFileName(NULL, AppPathName, MAX_PATH);
+
+	CString PathValue(AppPathName);
+	int pos=PathValue.ReverseFind('\\');
+	PathValue=PathValue.Left(pos);
+	PathValue+=_T("\\null.uni");
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".txt\\ShellNew"),_T("FileName"),(LPCTSTR)PathValue))
+		AfxMessageBox(_T("创建键值\"[HKEY_CLASSES_ROOT\\.txt\\ShellNew\\FileName]\"失败"));
 }
 
 void CSettingDlg::OnBnClickedTxtoldstyleButton()
 {
-	// TODO: 在此添加控件通知处理程序代码
+	HKEY hKey;
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".txt\\ShellNew"),0L,KEY_ALL_ACCESS,&hKey)==ERROR_SUCCESS)
+		RegDeleteValue(hKey,_T("FileName"));
+
+	//AddRegKey(HKEY_CLASSES_ROOT,_T(".txt\\ShellNew"),_T("ItemName"),_T("@%SystemRoot%\\system32\\notepad.exe,-470"),REG_EXPAND_SZ);
+	AddRegKey(HKEY_CLASSES_ROOT,_T(".txt\\ShellNew"),_T("NullFile"),_T(""));
 }

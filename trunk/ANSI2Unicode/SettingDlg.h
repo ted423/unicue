@@ -12,7 +12,7 @@ public:
 public:
 	CSettingDlg(void);
 	~CSettingDlg(void);
-	BOOL AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lpValue);
+	BOOL AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lpValue,DWORD dwType=REG_SZ);
 	BOOL DeleteRegKey();
 
 protected:

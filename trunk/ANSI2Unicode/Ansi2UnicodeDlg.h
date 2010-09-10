@@ -65,12 +65,12 @@ protected:
 	BOOL CreateConfigFile();
 	BOOL SaveConfigFile();
 	void FixCue();
-	void FixInternalCue(CString ExtensionName);
+	void FixInternalCue(CString AudioFileName);
 	void FixTTACue();
 	BOOL SetDialogPos();
 	BOOL DealFile();
-	BOOL ExtractTakInternalCue(CString ExtensionName);
-	BOOL ExtractFlacInternalCue(CString ExtensionName);
+	BOOL ExtractTakInternalCue(CString AudioFileName);
+	BOOL ExtractFlacInternalCue(CString AudioFileName);
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
