@@ -48,4 +48,12 @@
 [HKEY_CLASSES_ROOT\UniCue.UNI\DefaultIcon]<BR>
 @="AppFolder\\icons\\file.ico"
 
+1.0.3版起可以将新建文本文档(txt)由系统默认模板变更为带utf-8 BOM标记的模板。程序会更改下面的注册表项：<BR>
+
+删除[HKEY_CLASSES_ROOT\.txt\ShellNew]下的 NullFile 键值<BR>
+
+写键值：（AppFolder为程序所在目录）<BR> 
+[HKEY_CLASSES_ROOT\.txt\ShellNew]<BR>
+ "FileName"="AppFolder\\null.uni"<BR>
+
 win7或vista系统在更改注册表时需要管理员权限
