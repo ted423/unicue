@@ -54,6 +54,6 @@
 
 写键值：（AppFolder为程序所在目录）<BR> 
 [HKEY_CLASSES_ROOT\.txt\ShellNew]<BR>
- "FileName"="AppFolder\\null.uni"<BR>
+"FileName"="AppFolder\\null.uni"<BR>
 
 win7或vista系统在更改注册表时需要管理员权限
