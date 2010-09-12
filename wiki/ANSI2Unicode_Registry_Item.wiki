@@ -47,3 +47,5 @@
 'AppFolder为程序目录，如E:\\Program Files (x86)\\UniCue<BR>
 [HKEY_CLASSES_ROOT\UniCue.UNI\DefaultIcon]<BR>
 @="AppFolder\\icons\\file.ico"
+
+win7或vista系统在更改注册表时需要管理员权限
