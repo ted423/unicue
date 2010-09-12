@@ -153,16 +153,11 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 	{
 		//存在.cue
 		DWORD BufferSize=520,ValueType;
-		BYTE *Data = new BYTE[520]; //长度一般不会超过260个字符
-		memset(Data,0,520);
-		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,Data,&BufferSize)==ERROR_SUCCESS)
+		WCHAR *CueFileType = new WCHAR[260]; //长度一般不会超过260个字符
+		wmemset(CueFileType,0,260);
+		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,(BYTE*)CueFileType,&BufferSize)==ERROR_SUCCESS)
 		{
-			TRACE(_T("%d"),BufferSize); //BufferSize=键值字串长度*2 +2或+1
-			TRACE(_T("%s"),Data);
-			if (BufferSize%2==0)
-				BufferSize-=2;
-			else
-				BufferSize-=1;
+			BufferSize=wcslen(CueFileType);
 			if (ValueType!=REG_SZ)
 			{
 				//读取键值出错
@@ -170,11 +165,6 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 			}
 			else
 			{
-				BufferSize=BufferSize>>1;
-				WCHAR *CueFileType=new WCHAR[BufferSize+1];
-				memcpy((void*)CueFileType,(void*)Data,BufferSize*2);
-				CueFileType[BufferSize]='\0';
-
 				//假定CueFileType等于Foobar2000.CUE
 				CString CueKeyPath(CueFileType);
 				//AfxMessageBox(CueKeyPath);
@@ -184,11 +174,9 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 				CueKeyPath+=_T("\\command");
 				if (!AddRegKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,_T(""),(LPCTSTR)PathValue))
 					AfxMessageBox(_T("创建子项\"[HKEY_CLASSES_ROOT\\foobar2000.CUE\\shell\\unicue\\command]\"失败"));
-
-				delete []CueFileType;
 			}
 		}
-		delete []Data;
+		delete []CueFileType;
 		RegCloseKey(hCue);
 	}
 
@@ -269,30 +257,20 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue)==ERROR_SUCCESS)  //存在.cue
 	{
 		DWORD BufferSize=520,ValueType;
-		BYTE *Data = new BYTE[520]; //长度一般不会超过260个字符
-		memset(Data,0,520);
-		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,Data,&BufferSize)==ERROR_SUCCESS)
+		WCHAR *CueFileType = new WCHAR[260]; //长度一般不会超过260个字符
+		wmemset(CueFileType,0,260);
+		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,(BYTE*)CueFileType,&BufferSize)==ERROR_SUCCESS)
 		{
-			if (BufferSize%2==0)
-				BufferSize-=2;
-			else
-				BufferSize-=1;
 			if (ValueType==REG_SZ)
 			{
-				BufferSize=BufferSize>>1;
-				WCHAR *CueFileType=new WCHAR[BufferSize+1];
-				memcpy((void*)CueFileType,(void*)Data,BufferSize*2);
-				CueFileType[BufferSize]='\0';
 				CString CueKeyPath(CueFileType);
 				CueKeyPath+=_T("\\Shell\\unicue\\command");
 				RegDeleteKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath);
 				CueKeyPath=CueKeyPath.Left(CueKeyPath.GetLength()-8);
 				RegDeleteKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath);
-
-				delete []CueFileType;
 			}
 		}
-		delete []Data;
+		delete []CueFileType;
 		RegCloseKey(hCue);
 	}
 
