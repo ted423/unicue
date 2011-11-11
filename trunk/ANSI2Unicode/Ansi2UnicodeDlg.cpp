@@ -1,7 +1,4 @@
-﻿TemplateStr
-TemplateStr
-TemplateStr
-/************************************************************************/
+﻿/************************************************************************/
 /*  Ansi to Unicode 1.1                                                 */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
