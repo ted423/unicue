@@ -1,40 +1,42 @@
+ï»¿TemplateStr
+TemplateStr
+TemplateStr
 /************************************************************************/
-/*  Ansi to Unicode 1.0.3                                               */
+/*  Ansi to Unicode 1.1                                                 */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */
 /************************************************************************/
 
-// Ansi2UnicodeDlg.cpp : ÊµÏÖÎÄ¼ş
+// Ansi2UnicodeDlg.cpp : å®ç°æ–‡ä»¶
 //
 #pragma once
 #include "stdafx.h"
-#include "..\misc\HyperLink.h"
+#include "HyperLink.h"
 #include "Ansi2Unicode.h"
 #include "Ansi2UnicodeDlg.h"
 #include "SettingDlg.h"
-#include "toUnicode.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
-// ÓÃÓÚÓ¦ÓÃ³ÌĞò¡°¹ØÓÚ¡±²Ëµ¥ÏîµÄ CAboutDlg ¶Ô»°¿ò
+// ç”¨äºåº”ç”¨ç¨‹åºâ€œå…³äºâ€èœå•é¡¹çš„ CAboutDlg å¯¹è¯æ¡†
 class CAboutDlg : public CDialog
 {
 public:
 	CAboutDlg();
 
-// ¶Ô»°¿òÊı¾İ
+// å¯¹è¯æ¡†æ•°æ®
 	enum { IDD = IDD_ABOUTBOX };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV æ”¯æŒ
 	CImage m_png;
 	CHyperLink m_link;
 
-// ÊµÏÖ
+// å®ç°
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
@@ -55,7 +57,7 @@ BOOL CAboutDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	//ÓÃCImage¼ÓÔØ£ºÁ÷»òÎÄ¼ş
+	//ç”¨CImageåŠ è½½ï¼šæµæˆ–æ–‡ä»¶
 	HGLOBAL        hGlobal = NULL;
 	HRSRC          hSource = NULL;
 	int            nSize   = 0;
@@ -112,7 +114,7 @@ void CAboutDlg::OnPaint()
 			pucColor[2] = pucColor[2] * pucColor[3] / 255;
 		}
 	}
-	m_png.AlphaBlend(dc.GetSafeHdc(),8,8); //Í¸Ã÷ÏÔÊ¾
+	m_png.AlphaBlend(dc.GetSafeHdc(),8,8); //é€æ˜æ˜¾ç¤º
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
@@ -120,10 +122,10 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-// CAnsi2UnicodeDlg ¶Ô»°¿ò
+// CAnsi2UnicodeDlg å¯¹è¯æ¡†
 CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAnsi2UnicodeDlg::IDD, pParent),m_bNeedConvert(TRUE),m_RawStringLength(0),m_StringLength(0),m_UnicodeLength(0),
-	m_StringCodeType(CODETYPE_SHIFTJIS),/*m_bConfigLoaded(FALSE),m_bCommandLineOpen(FALSE),*/m_bCueFile(FALSE),m_bTransferString(FALSE)
+	m_StringCodeType("Local Codepage"),/*m_bConfigLoaded(FALSE),m_bCommandLineOpen(FALSE),*/m_bCueFile(FALSE),m_bTransferString(FALSE)
 {
 	m_hLittleIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_LITTLE);
 	//m_hBigIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_BIG);
@@ -135,14 +137,14 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	//m_ConfigPath="";
 	m_Config.RegNewUniFile=FALSE;
 
-	// ´ÓÎÄ¼ş¼ÓÔØÅäÖÃ
+	// ä»æ–‡ä»¶åŠ è½½é…ç½®
 	TCHAR szFull[_MAX_PATH];
 	GetModuleFileName(NULL,szFull,_MAX_PATH);
-	m_ConfigPath=CString(szFull);
+	CString processPath(szFull);
 	int pos;
-	pos=m_ConfigPath.ReverseFind('\\');
-	m_ConfigPath=m_ConfigPath.Left(pos);
-	m_ConfigPath+=_T("\\Config.xml");
+	pos=processPath.ReverseFind('\\');
+	processPath=processPath.Left(pos+1);
+	m_ConfigPath=processPath+_T("Config.xml");
 
 	TiXmlDocument *doc = new TiXmlDocument(CStringA(m_ConfigPath));
 	bool loadOK = doc->LoadFile(TIXML_ENCODING_UTF8);
@@ -159,6 +161,7 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 			m_Config.AutoCheckCode=TRUE;
 			m_Config.AlwaysOnTop=TRUE;
 			m_Config.CloseCuePrompt=FALSE;
+			m_Config.MapConfName = _T("charmap-anisong.xml");
 			//m_Config.RegNewUniFile=FALSE;
 		}
 	}
@@ -172,8 +175,13 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 		m_Config.AutoCheckCode=TRUE;
 		m_Config.AlwaysOnTop=TRUE;
 		m_Config.CloseCuePrompt=FALSE;
+		m_Config.MapConfName = _T("charmap-anisong.xml");
 		//m_Config.RegNewUniFile=FALSE;
 	}
+	delete doc;
+	m_context = new CC4Context((LPCTSTR)m_Config.MapConfName, (LPCTSTR)processPath);
+	if (!m_context->init())
+		AfxMessageBox(_T("Failed to load charmaps!"));
 }
 
 CAnsi2UnicodeDlg::~CAnsi2UnicodeDlg()
@@ -188,6 +196,12 @@ CAnsi2UnicodeDlg::~CAnsi2UnicodeDlg()
 		delete []m_UnicodeString;
 		m_UnicodeString=NULL;
 	}
+	if (m_context)
+	{
+		m_context->finalize();
+		delete m_context;
+		m_context = NULL;
+	}
 }
 
 void CAnsi2UnicodeDlg::DoDataExchange(CDataExchange* pDX)
@@ -195,7 +209,6 @@ void CAnsi2UnicodeDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_CHECK_AUTOCHECKCODE,  m_Config.AutoCheckCode);
 	DDX_Check(pDX, IDC_CHECK_ALWAYSONTOP,    m_Config.AlwaysOnTop);
-	//DDX_CBIndex(pDX, IDC_COMBO_SELECTCODE, m_StringCodeType);
 }
 
 BEGIN_MESSAGE_MAP(CAnsi2UnicodeDlg, CDialog)
@@ -220,17 +233,17 @@ BEGIN_MESSAGE_MAP(CAnsi2UnicodeDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-// CAnsi2UnicodeDlg ÏûÏ¢´¦Àí³ÌĞò
+// CAnsi2UnicodeDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CAnsi2UnicodeDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// ½«¡°¹ØÓÚ...¡±²Ëµ¥ÏîÌí¼Óµ½ÏµÍ³²Ëµ¥ÖĞ¡£
+	// å°†â€œå…³äº...â€èœå•é¡¹æ·»åŠ åˆ°ç³»ç»Ÿèœå•ä¸­ã€‚
 	m_menu.LoadMenu(IDR_MENU1);
 	CDialog::SetMenu(&m_menu);
 
-	// IDM_ABOUTBOX ±ØĞëÔÚÏµÍ³ÃüÁî·¶Î§ÄÚ¡£
+	// IDM_ABOUTBOX å¿…é¡»åœ¨ç³»ç»Ÿå‘½ä»¤èŒƒå›´å†…ã€‚
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
@@ -246,26 +259,25 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 		}
 	}
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hLittleIcon, TRUE);		// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hLittleIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hLittleIcon, TRUE);		// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hLittleIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
-	// Ìí¼Ó±àÂëÑ¡Ïî
+	// æ·»åŠ ç¼–ç é€‰é¡¹
 	CComboBox *theCombo;
 	theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
+	std::list<std::wstring> &encodeList = m_context->getEncodesNameList();
+	std::list<std::wstring>::iterator iter;
 	theCombo->InsertString(-1,_T("Local Codepage"));
-	theCombo->InsertString(-1,_T("GBK"));
-	theCombo->InsertString(-1,_T("Big5"));
-	theCombo->InsertString(-1,_T("Shift-JIS"));
-	theCombo->InsertString(-1,_T("UTF-8"));
-	theCombo->InsertString(-1,_T("Unicode(UTF-16)"));
-	theCombo->SetCurSel(m_StringCodeType);
+	for (iter = encodeList.begin(); iter != encodeList.end(); iter++)
+		theCombo->InsertString(-1, iter->c_str());
+	theCombo->SetCurSel(0);
 
-	//ÉèÖÃ»òÈ¡Ïû×îÇ°¶Ë
+	//è®¾ç½®æˆ–å–æ¶ˆæœ€å‰ç«¯
 	SetDialogPos();
 
-	// »ñÈ¡ÃüÁîĞĞ
+	// è·å–å‘½ä»¤è¡Œ
 	if (AfxGetApp()->m_lpCmdLine[0]!=_T('\0'))
 	{
 		//m_bCommandLineOpen=TRUE;
@@ -320,7 +332,7 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 	LocalFree(szArglist);
 	*/
 
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
 BOOL CAnsi2UnicodeDlg::SetDialogPos()
@@ -340,20 +352,20 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	TiXmlElement *pElem;
 	TiXmlHandle hXmlHandle(0);
 
-	//config½Úµã
+	//configèŠ‚ç‚¹
 	pElem=hRoot.FirstChildElement().Element();
 	if (!pElem) return FALSE;
 	if (strcmp(pElem->Value(),"config")!=0)
 		return FALSE;
 
-	//TemplateStr½Úµã
+	//TemplateStrèŠ‚ç‚¹
 	hXmlHandle=TiXmlHandle(pElem);
 	pElem=hXmlHandle.FirstChild("TemplateStr").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
-	m_Config.TemplateStr=UTF8toUnicode(pElem->GetText());
+	m_Config.TemplateStr=CC4EncodeUTF8::convert2unicode(pElem->GetText(), strlen(pElem->GetText())).c_str();
 
-	//AutoFixCue½Úµã
+	//AutoFixCueèŠ‚ç‚¹
 	pElem=hXmlHandle.FirstChild("AutoFixCue").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
@@ -362,7 +374,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	else
 		m_Config.AutoFixCue=FALSE;
 
-	//AutoFixTTA½Úµã
+	//AutoFixTTAèŠ‚ç‚¹
 	pElem=hXmlHandle.FirstChild("AutoFixTTA").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
@@ -371,7 +383,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	else
 		m_Config.AutoFixTTA=FALSE;
 
-	//AcceptDragAudioFile½Úµã
+	//AcceptDragAudioFileèŠ‚ç‚¹
 	pElem=hXmlHandle.FirstChild("AcceptDragAudioFile").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
@@ -380,7 +392,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	else
 		m_Config.AcceptDragAudioFile=FALSE;
 
-	//CloseCuePrompt½Úµã
+	//CloseCuePromptèŠ‚ç‚¹
 	pElem=hXmlHandle.FirstChild("CloseCuePrompt").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
@@ -389,7 +401,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	else
 		m_Config.CloseCuePrompt=FALSE;
 
-	//AutoCheckCode½Úµã
+	//AutoCheckCodeèŠ‚ç‚¹
 	pElem=hXmlHandle.FirstChild("AutoCheckCode").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
@@ -398,7 +410,7 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	else
 		m_Config.AutoCheckCode=FALSE;
 
-	//AlwaysOnTop½Úµã
+	//AlwaysOnTopèŠ‚ç‚¹
 	pElem=hXmlHandle.FirstChild("AlwaysOnTop").Element();
 	if (!pElem) return FALSE;
 	if (!pElem->GetText()) return FALSE;
@@ -407,13 +419,18 @@ BOOL CAnsi2UnicodeDlg::LoadConfigFile(TiXmlDocument *xmlfile)
 	else
 		m_Config.AlwaysOnTop=FALSE;
 
+	//CharmapConfPathèŠ‚ç‚¹
+	pElem=hXmlHandle.FirstChild("CharmapConfPath").Element();
+	if (!pElem) return FALSE;
+	if (!pElem->GetText()) return FALSE;
+	m_Config.MapConfName = CC4EncodeUTF8::convert2unicode(pElem->GetText(), strlen(pElem->GetText())).c_str();
+
 	return TRUE;
 }
 
 BOOL CAnsi2UnicodeDlg::CreateConfigFile()
 {
 	TiXmlDocument configdoc;
-	//TiXmlDeclaration *dec=new TiXmlDeclaration("1.0","gb2312","");
 	TiXmlDeclaration *dec=new TiXmlDeclaration("1.0","utf-8","");
 	TiXmlElement *configure=new TiXmlElement("config");
 
@@ -452,20 +469,20 @@ BOOL CAnsi2UnicodeDlg::CreateConfigFile()
 	AlwaysOnTop->LinkEndChild(AlwaysOnTopValue);
 	configure->LinkEndChild(AlwaysOnTop);
 
+	TiXmlElement *CharmapConfPath = new TiXmlElement("CharmapConfPath");
+	TiXmlText *CharmapConfPathValue = new TiXmlText("charmap-anisong.xml");
+	CharmapConfPath->LinkEndChild(CharmapConfPathValue);
+	configure->LinkEndChild(CharmapConfPath);
+
 	configdoc.LinkEndChild(dec);
 	configdoc.LinkEndChild(configure);
-	//configdoc.SaveFile(CStringA(m_ConfigPath));
 
 	TiXmlPrinter printer;
 	configdoc.Accept(&printer);
 
-	//const CStringW UnicodeStr(printer.CStr());
-	//const CStringA UTF8Str=CW2A(UnicodeStr,CP_UTF8);
-	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
-
 	CFile theFile;
 	theFile.Open(m_ConfigPath,CFile::modeCreate|CFile::modeWrite);
-	theFile.Write(UTF8BOM,3);
+	theFile.Write(CC4Encode::UTF_8_BOM,3);
 	theFile.Write(printer.CStr(),strlen(printer.CStr()));
 	theFile.Close();
 
@@ -479,8 +496,10 @@ BOOL CAnsi2UnicodeDlg::SaveConfigFile()
 	TiXmlElement *configure=new TiXmlElement("config");
 
 	TiXmlElement *TemplateStr=new TiXmlElement("TemplateStr");
-	CStringA UTF8Str=CW2A(m_Config.TemplateStr,CP_UTF8);
-	TiXmlText *TemplateStrValue=new TiXmlText(UTF8Str);
+	std::string &UTF8Str = CC4EncodeUTF16::getInstance()->convertWideString((LPCTSTR)m_Config.TemplateStr);
+	//std::string &UTF8Str = CC4EncodeUTF16::convert2utf8((LPCTSTR)m_Config.TemplateStr, m_Config.TemplateStr.GetLength());
+	//CStringA UTF8Str=CW2A(m_Config.TemplateStr,CP_UTF8);
+	TiXmlText *TemplateStrValue=new TiXmlText(UTF8Str.c_str());
 	TemplateStr->LinkEndChild(TemplateStrValue);
 	configure->LinkEndChild(TemplateStr);
 
@@ -538,6 +557,13 @@ BOOL CAnsi2UnicodeDlg::SaveConfigFile()
 	AlwaysOnTop->LinkEndChild(AlwaysOnTopValue);
 	configure->LinkEndChild(AlwaysOnTop);
 
+	TiXmlElement *CharmapConfPath = new TiXmlElement("CharmapConfPath");
+	TiXmlText *CharmapConfPathValue;
+	CharmapConfPathValue = new TiXmlText(CC4EncodeUTF16::getInstance()->convertWideString((LPCTSTR)m_Config.MapConfName).c_str());
+	//CharmapConfPathValue = new TiXmlText(CW2A(m_Config.MapConfName, CP_UTF8));
+	CharmapConfPath->LinkEndChild(CharmapConfPathValue);
+	configure->LinkEndChild(CharmapConfPath);
+
 	configdoc.LinkEndChild(dec);
 	configdoc.LinkEndChild(configure);
 
@@ -568,19 +594,19 @@ void CAnsi2UnicodeDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CAnsi2UnicodeDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -588,7 +614,7 @@ void CAnsi2UnicodeDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hLittleIcon);
 	}
 	else
@@ -597,7 +623,7 @@ void CAnsi2UnicodeDlg::OnPaint()
 	}
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±êÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡æ˜¾ç¤ºã€‚
 //
 HCURSOR CAnsi2UnicodeDlg::OnQueryDragIcon()
 {
@@ -631,7 +657,7 @@ BOOL CAnsi2UnicodeDlg::DealFile()
 	if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
 	{
 		OpenFile.Close();
-		::AfxMessageBox(_T("´ò¿ªÊ§°Ü£¡"),MB_OK);
+		::AfxMessageBox(_T("æ‰“å¼€å¤±è´¥ï¼"),MB_OK);
 		return FALSE;
 	}
 	m_bNeedConvert=TRUE;
@@ -656,7 +682,7 @@ BOOL CAnsi2UnicodeDlg::DealFile()
 
 	CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 	CStatic   *theStatic =(CStatic*)GetDlgItem(IDC_STATIC_STAT);
-	m_CodeStatus=_T("Î´Öª±àÂë");
+	m_CodeStatus=_T("æœªçŸ¥ç¼–ç ");
 
 	CEdit *LeftEdit =(CEdit *)GetDlgItem(IDC_EDIT_ANSI);
 	CEdit *RightEdit=(CEdit *)GetDlgItem(IDC_EDIT_UNICODE);
@@ -666,13 +692,14 @@ BOOL CAnsi2UnicodeDlg::DealFile()
 	{
 		m_CodeStatus=_T("Unicode (little endian)");
 		m_bNeedConvert=FALSE;
-		m_StringCodeType=CODETYPE_UNICODE;
-		theCombo->SetCurSel(m_StringCodeType);
-		m_String=m_RawString+2; //ÕæÕıµÄÆğÊ¼µØÖ·
-		m_StringLength=m_RawStringLength-2; //ÕæÕıµÄ³¤¶È
+		m_StringCodeType=CC4EncodeUTF16::_getName().c_str();
+		int nIndex = theCombo->FindStringExact(0, m_StringCodeType);
+		theCombo->SetCurSel(nIndex);
+		m_String=m_RawString+2; //çœŸæ­£çš„èµ·å§‹åœ°å€
+		m_StringLength=m_RawStringLength-2; //çœŸæ­£çš„é•¿åº¦
 		if ((m_RawStringLength%2)!=0)
 		{
-			MessageBox(_T("ÎÄ±¾´íÎó£¡"));
+			MessageBox(_T("æ–‡æœ¬é”™è¯¯ï¼"));
 			return FALSE;
 		}
 		m_UnicodeLength=m_StringLength>>1;
@@ -685,20 +712,21 @@ BOOL CAnsi2UnicodeDlg::DealFile()
 	{
 		m_CodeStatus=_T("Unicode (big endian)");
 		m_bNeedConvert=FALSE;
-		m_StringCodeType=CODETYPE_UNICODE;
-		theCombo->SetCurSel(m_StringCodeType);
-		m_String=m_RawString+2; //ÕæÕıµÄÆğÊ¼µØÖ·
-		m_StringLength=m_RawStringLength-2; //ÕæÕıµÄ³¤¶È
+		m_StringCodeType=CC4EncodeUTF16::_getName().c_str();
+		int nIndex = theCombo->FindStringExact(0, m_StringCodeType);
+		theCombo->SetCurSel(nIndex);
+		m_String=m_RawString+2; //çœŸæ­£çš„èµ·å§‹åœ°å€
+		m_StringLength=m_RawStringLength-2; //çœŸæ­£çš„é•¿åº¦
 		if ((m_RawStringLength%2)!=0)
 		{
-			MessageBox(_T("ÎÄ±¾´íÎó£¡"));
+			MessageBox(_T("æ–‡æœ¬é”™è¯¯ï¼"));
 			return FALSE;
 		}
 		m_UnicodeLength=m_StringLength>>1;
 		m_UnicodeString=new wchar_t[m_UnicodeLength+1];
 		memcpy((void*)m_UnicodeString,m_String,m_StringLength);
 		m_UnicodeString[m_UnicodeLength]='\0';
-		//µ÷Õû¸ßµÍÎ»Ë³Ğò
+		//è°ƒæ•´é«˜ä½ä½é¡ºåº
 		for (UINT i=0;i<m_UnicodeLength;i++)
 		{
 			unsigned char chars[2];
@@ -712,66 +740,61 @@ BOOL CAnsi2UnicodeDlg::DealFile()
 	{
 		m_CodeStatus=_T("UTF-8 (with BOM)");
 		m_bNeedConvert=FALSE;
-		m_StringCodeType=CODETYPE_UTF8;
-		theCombo->SetCurSel(m_StringCodeType);
-		m_String=m_RawString+3; //ÕæÕıµÄÆğÊ¼µØÖ·
-		m_StringLength=m_RawStringLength-3; //ÕæÕıµÄ³¤¶È
+		m_StringCodeType=CC4EncodeUTF8::_getName().c_str();
+		int nIndex = theCombo->FindStringExact(0, m_StringCodeType);
+		theCombo->SetCurSel(nIndex);
+		m_String=m_RawString+3; //çœŸæ­£çš„èµ·å§‹åœ°å€
+		m_StringLength=m_RawStringLength-3; //çœŸæ­£çš„é•¿åº¦
 	}
 
 	if (m_bNeedConvert==FALSE)
 	{
-		theStatic->SetWindowText(_T("ÎÄµµ±àÂë¼ì²â½á¹û£º")+m_CodeStatus+_T("\n\nÎÄµµÂ·¾¶£º")+m_FilePathName);
-		if (m_StringCodeType==CODETYPE_UNICODE)
+		theStatic->SetWindowText(_T("æ–‡æ¡£ç¼–ç æ£€æµ‹ç»“æœï¼š")+m_CodeStatus+_T("\n\næ–‡æ¡£è·¯å¾„ï¼š")+m_FilePathName);
+		if (m_StringCodeType==CC4EncodeUTF16::_getName().c_str())
 		{
 			CString RightEditText(m_UnicodeString);
 			RightEdit->SetWindowText(RightEditText);
 			LeftEdit->SetWindowText(_T(""));
 		}
-		if (m_StringCodeType==CODETYPE_UTF8)
+		if (m_StringCodeType==CC4EncodeUTF8::_getName().c_str())
 		{
-			RightEdit->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+			RightEdit->SetWindowText(CC4EncodeUTF8::convert2unicode(m_String,m_StringLength).c_str());
 			LeftEdit->SetWindowText(_T(""));
 		}
 	}
 	else
 	{
-		//¼ì²â±àÂë
+		//æ£€æµ‹ç¼–ç 
 		if (m_Config.AutoCheckCode==TRUE)
 		{
-			m_StringCodeType=CheckCodeType(m_String,m_StringLength,m_StringCodeType);
-			theCombo->SetCurSel(m_StringCodeType);
-			switch (m_StringCodeType)
+			const CC4Encode *encode = m_context->getMostPossibleEncode(m_String);
+			if (encode)
 			{
-			case CODETYPE_DEFAULT:
-				m_CodeStatus=_T("Î´Öª±àÂë");
-				break;
-			case CODETYPE_SHIFTJIS:
-				m_CodeStatus=_T("Shift-JIS");
-				break;
-			case CODETYPE_GBK:
-				m_CodeStatus=_T("GBK");
-				break;
-			case CODETYPE_BIG5:
-				m_CodeStatus=_T("Big5");
-				break;
-			case CODETYPE_UTF8:
-				m_CodeStatus=_T("UTF-8 (without BOM)");
-				break;
-			default:
-				m_CodeStatus=_T("Î´Öª±àÂë");
+				m_StringCodeType = encode->getName().c_str();
+				int nIndex = theCombo->FindStringExact(0, m_StringCodeType);
+				theCombo->SetCurSel(nIndex);
+				m_CodeStatus = encode->getName().c_str();
+			} else {
+				theCombo->GetLBText(0,m_StringCodeType);
+				theCombo->SetCurSel(0);
+				m_CodeStatus = _T("æœªçŸ¥ç¼–ç ");
 			}
 		}
 		else
-			m_CodeStatus=_T("ÒÑ¾­¹Ø±Õ±àÂë×Ô¶¯¼ì²â");
+			m_CodeStatus=_T("å·²ç»å…³é—­ç¼–ç è‡ªåŠ¨æ£€æµ‹");
 
-		theStatic->SetWindowText(_T("ÎÄµµ±àÂë¼ì²â½á¹û£º")+m_CodeStatus+_T("\n\nÎÄµµÂ·¾¶£º")+m_FilePathName);
+		theStatic->SetWindowText(_T("æ–‡æ¡£ç¼–ç æ£€æµ‹ç»“æœï¼š")+m_CodeStatus+_T("\n\næ–‡æ¡£è·¯å¾„ï¼š")+m_FilePathName);
 
-		//×ó
-		CString LeftEditText(m_String); //×¢Òâ£º´ËÊ±LeftEditTextµÄÊı¾İÀàĞÍÒÑ¾­ÊÇUnicode×Ö·û´®£¬Ã¿¸ö×Ö·ûÕ¼ÓÃÁ½¸ö×Ö½Ú
+		//å·¦
+		CString LeftEditText(m_String); //æ³¨æ„ï¼šæ­¤æ—¶LeftEditTextçš„æ•°æ®ç±»å‹å·²ç»æ˜¯Unicodeå­—ç¬¦ä¸²ï¼Œæ¯ä¸ªå­—ç¬¦å ç”¨ä¸¤ä¸ªå­—èŠ‚
 		LeftEdit->SetWindowText(LeftEditText);
 
-		//ÓÒ
-		RightEdit->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
+		//å³
+		const CC4Encode *encode = m_context->getEncode((LPCTSTR)m_StringCodeType);
+		if (encode)
+			RightEdit->SetWindowText(encode->wconvertText(m_String, m_StringLength).c_str());
+		else
+			RightEdit->SetWindowText(CString(m_String));
 	}
 	
 	return TRUE;
@@ -781,9 +804,10 @@ BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString AudioFileName)
 {
 	m_CodeStatus=_T("UTF-8 (Internal Cue File)");
 	m_bNeedConvert=FALSE;
-	m_StringCodeType=CODETYPE_UTF8;
-	((CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE))->SetCurSel(m_StringCodeType);
-	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("ÎÄµµ±àÂë¼ì²â½á¹û£º")+m_CodeStatus+_T("\n\nÎÄµµÂ·¾¶£º")+m_FilePathName);
+	m_StringCodeType=CC4EncodeUTF8::_getName().c_str();
+	int nIndex = ((CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE))->FindStringExact(0, m_StringCodeType);
+	((CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE))->SetCurSel(nIndex);
+	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("æ–‡æ¡£ç¼–ç æ£€æµ‹ç»“æœï¼š")+m_CodeStatus+_T("\n\næ–‡æ¡£è·¯å¾„ï¼š")+m_FilePathName);
 	GetDlgItem(IDC_EDIT_ANSI)->SetWindowText(_T(""));
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(_T(""));
 
@@ -806,26 +830,26 @@ BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString AudioFileName)
 	if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
 	{
 		OpenFile.Close();
-		::AfxMessageBox(_T("´ò¿ªÊ§°Ü£¡"),MB_OK);
+		::AfxMessageBox(_T("æ‰“å¼€å¤±è´¥ï¼"),MB_OK);
 		return FALSE;
 	}
 
 	m_FilePathName+=_T(".cue");
-	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("ÎÄµµ±àÂë¼ì²â½á¹û£º")+m_CodeStatus+_T("\n\nÎÄµµÂ·¾¶£º")+m_FilePathName);
+	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("æ–‡æ¡£ç¼–ç æ£€æµ‹ç»“æœï¼š")+m_CodeStatus+_T("\n\næ–‡æ¡£è·¯å¾„ï¼š")+m_FilePathName);
 
-	if (OpenFile.GetLength()<20480) // Ğ¡ÓÚ20K£¬ÎÄµµÌ«Ğ¡ÁË
+	if (OpenFile.GetLength()<20480) // å°äº20Kï¼Œæ–‡æ¡£å¤ªå°äº†
 	{
 		OpenFile.Close();
 		return FALSE;
 	}
 
 	OpenFile.Seek(-20480,CFile::end);
-	unsigned char Buffer[20480]; //20kµÄ»º³åÇø
+	unsigned char Buffer[20480]; //20kçš„ç¼“å†²åŒº
 	memset(Buffer,0,20480);
 	OpenFile.Read(Buffer,20480);
 	OpenFile.Close();
 
-	//²éÕÒ Cuesheet ±ê¼Ç,×Ô¶¯»úÄ£ĞÍ,´óĞ¡Ğ´²»Ãô¸Ğ
+	//æŸ¥æ‰¾ Cuesheet æ ‡è®°,è‡ªåŠ¨æœºæ¨¡å‹,å¤§å°å†™ä¸æ•æ„Ÿ
 	int state=0,BeginPos=0,EndPos=0,Length=0;
 	for (int i=0;i<20480;++i)
 	{
@@ -892,7 +916,7 @@ BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString AudioFileName)
 	if (BeginPos==0)
 		return FALSE;
 	//AfxMessageBox(_T("2"));
-	//²éÕÒÖÕÖ¹·û 0D 0A ? 00 00 00 00 00 00 £¨Á¬ĞøÁù¸öÖÕÖ¹·ûÒÔÉÏ£©
+	//æŸ¥æ‰¾ç»ˆæ­¢ç¬¦ 0D 0A ? 00 00 00 00 00 00 ï¼ˆè¿ç»­å…­ä¸ªç»ˆæ­¢ç¬¦ä»¥ä¸Šï¼‰
 	state=0;
 	for (int i=BeginPos;i<20480;++i)
 	{
@@ -906,7 +930,7 @@ BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString AudioFileName)
 		}
 		if (state==6)
 		{
-			EndPos=i-6; //Ö¸Ïò0D 0AºóµÄµÚÒ»¸ö×Ö·û
+			EndPos=i-6; //æŒ‡å‘0D 0Aåçš„ç¬¬ä¸€ä¸ªå­—ç¬¦
 			break;
 		}
 	}
@@ -928,22 +952,23 @@ BOOL CAnsi2UnicodeDlg::ExtractTakInternalCue(CString AudioFileName)
 	m_String=m_RawString;
 	m_StringLength=m_RawStringLength;
 
-	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CC4EncodeUTF8::convert2unicode(m_String,m_StringLength).c_str());
 
 	FixInternalCue(AudioFileName);
 
 	return TRUE;
 }
 
-// flacÎÄ¼ş½á¹¹
+// flacæ–‡ä»¶ç»“æ„
 // http://flac.sourceforge.net/format.html
 BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 {
 	m_CodeStatus=_T("UTF-8 (Internal Cue File)");
 	m_bNeedConvert=FALSE;
-	m_StringCodeType=CODETYPE_UTF8;
-	((CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE))->SetCurSel(m_StringCodeType);
-	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("ÎÄµµ±àÂë¼ì²â½á¹û£º")+m_CodeStatus+_T("\n\nÎÄµµÂ·¾¶£º")+m_FilePathName);
+	m_StringCodeType=CC4EncodeUTF8::_getName().c_str();
+	int nIndex = ((CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE))->FindStringExact(0, m_StringCodeType);
+	((CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE))->SetCurSel(nIndex);
+	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("æ–‡æ¡£ç¼–ç æ£€æµ‹ç»“æœï¼š")+m_CodeStatus+_T("\n\næ–‡æ¡£è·¯å¾„ï¼š")+m_FilePathName);
 	GetDlgItem(IDC_EDIT_ANSI)->SetWindowText(_T(""));
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(_T(""));
 
@@ -966,13 +991,13 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 	if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
 	{
 		OpenFile.Close();
-		::AfxMessageBox(_T("´ò¿ªÊ§°Ü£¡"),MB_OK);
+		::AfxMessageBox(_T("æ‰“å¼€å¤±è´¥ï¼"),MB_OK);
 		return FALSE;
 	}
 
 	m_FilePathName+=_T(".cue");
-	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("ÎÄµµ±àÂë¼ì²â½á¹û£º")+m_CodeStatus+_T("\n\nÎÄµµÂ·¾¶£º")+m_FilePathName);
-	if (OpenFile.GetLength()<1048576) // Ğ¡ÓÚ1M£¬ÎÄµµÌ«Ğ¡ÁË
+	GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("æ–‡æ¡£ç¼–ç æ£€æµ‹ç»“æœï¼š")+m_CodeStatus+_T("\n\næ–‡æ¡£è·¯å¾„ï¼š")+m_FilePathName);
+	if (OpenFile.GetLength()<1048576) // å°äº1Mï¼Œæ–‡æ¡£å¤ªå°äº†
 	{
 		OpenFile.Close();
 		return FALSE;
@@ -981,7 +1006,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 	unsigned char Header[5];
 	memset(Header,0,5);
 	ULONGLONG position=0;
-	//4¸ö×Ö½ÚµÄÍ·²¿
+	//4ä¸ªå­—èŠ‚çš„å¤´éƒ¨
 	OpenFile.Read((void*)Header,4);
 	if (strcmp((char*)Header,"fLaC")!=0)
 	{
@@ -992,23 +1017,23 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 	unsigned char chr;
 	unsigned char *Buffer=NULL;
 	UINT Length;
-	//4¸ö×Ö½ÚµÄMETADATA_BLOCK_HEADER
+	//4ä¸ªå­—èŠ‚çš„METADATA_BLOCK_HEADER
 	do 
 	{
 		OpenFile.Read((void*)Header,4);
-		//½âÎö
+		//è§£æ
 		memcpy(&chr,Header,1);
-		//¼ì²é×î¸ßÎ»ÊÇ·ñÎª1
+		//æ£€æŸ¥æœ€é«˜ä½æ˜¯å¦ä¸º1
 		if ((chr&0x80)==0x80)
 		{
-			//×îºóÒ»¸öMETADATA_BLOCK
-			if ((chr&0x7F)==0x04)//ÊÇVORBIS_COMMENT
+			//æœ€åä¸€ä¸ªMETADATA_BLOCK
+			if ((chr&0x7F)==0x04)//æ˜¯VORBIS_COMMENT
 			{
-				//¶ÁÈ¡BLOCK³¤¶È
+				//è¯»å–BLOCKé•¿åº¦
 				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
-				//ÉêÇë¿Õ¼ä
+				//ç”³è¯·ç©ºé—´
 				Buffer=new unsigned char[Length+1];
-				//¶ÁÈ¡BLOCK DATA
+				//è¯»å–BLOCK DATA
 				OpenFile.Read((void*)Buffer,Length);
 				Buffer[Length]='\0';
 			}
@@ -1016,23 +1041,23 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 		}
 		else
 		{
-			//²»ÊÇ×îºóÒ»¸öMETADATA_BLOCK
-			if ((chr&0x7F)==0x04)//ÊÇVORBIS_COMMENT
+			//ä¸æ˜¯æœ€åä¸€ä¸ªMETADATA_BLOCK
+			if ((chr&0x7F)==0x04)//æ˜¯VORBIS_COMMENT
 			{
-				//¶ÁÈ¡BLOCK³¤¶È
+				//è¯»å–BLOCKé•¿åº¦
 				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
-				//ÉêÇë¿Õ¼ä
+				//ç”³è¯·ç©ºé—´
 				Buffer=new unsigned char[Length+1];
-				//¶ÁÈ¡BLOCK DATA
+				//è¯»å–BLOCK DATA
 				OpenFile.Read((void*)Buffer,Length);
 				Buffer[Length]='\0';
 				break;
 			}
-			else //²»ÊÇVORBIS_COMMENT
+			else //ä¸æ˜¯VORBIS_COMMENT
 			{
-				//¶ÁÈ¡BLOCK³¤¶È
+				//è¯»å–BLOCKé•¿åº¦
 				Length=Header[1]*0x10000+Header[2]*0x100+Header[3];
-				//ÒÆ¶¯ÎÄ¼şÖ¸Õë
+				//ç§»åŠ¨æ–‡ä»¶æŒ‡é’ˆ
 				OpenFile.Seek(Length,CFile::current);
 				position=OpenFile.GetPosition();
 			}
@@ -1043,7 +1068,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 	if (!Buffer)
 		return FALSE;
 
-	//²éÕÒ Cuesheet ±ê¼Ç,×Ô¶¯»úÄ£ĞÍ,´óĞ¡Ğ´²»Ãô¸Ğ
+	//æŸ¥æ‰¾ Cuesheet æ ‡è®°,è‡ªåŠ¨æœºæ¨¡å‹,å¤§å°å†™ä¸æ•æ„Ÿ
 	int state=0,BeginPos=0,EndPos=0;
 	for (UINT i=0;i<Length;++i)
 	{
@@ -1111,7 +1136,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 		delete []Buffer;
 		return FALSE;
 	}
-	//²éÕÒÖÕÖ¹·û 0D 0A ? 00 00 00£¨Á¬Ğø3¸öÖÕÖ¹·ûÒÔÉÏ£©
+	//æŸ¥æ‰¾ç»ˆæ­¢ç¬¦ 0D 0A ? 00 00 00ï¼ˆè¿ç»­3ä¸ªç»ˆæ­¢ç¬¦ä»¥ä¸Šï¼‰
 	state=0;
 	for (int i=BeginPos;i<20480;++i)
 	{
@@ -1125,7 +1150,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 		}
 		if (state==3)
 		{
-			EndPos=i-3; //Ö¸Ïò0D 0AºóµÄµÚÒ»¸ö×Ö·û
+			EndPos=i-3; //æŒ‡å‘0D 0Aåçš„ç¬¬ä¸€ä¸ªå­—ç¬¦
 			break;
 		}
 	}
@@ -1154,7 +1179,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 	m_StringLength=m_RawStringLength;
 	delete []Buffer;
 
-	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(UTF8toUnicode(m_String,m_StringLength));
+	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CC4EncodeUTF8::convert2unicode(m_String,m_StringLength).c_str());
 	FixInternalCue(AudioFileName);
 
 	return TRUE;
@@ -1162,7 +1187,7 @@ BOOL CAnsi2UnicodeDlg::ExtractFlacInternalCue(CString AudioFileName)
 
 void CAnsi2UnicodeDlg::OnFileOpen()
 {
-	CFileDialog openFile(TRUE,_T("*.txt"),NULL,OFN_EXTENSIONDIFFERENT|OFN_FILEMUSTEXIST|OFN_PATHMUSTEXIST,_T("ÎÄ±¾ÎÄ¼ş(*.txt;*.cue;*.log)|*.txt;*.cue;*.log|txtÎÄ±¾ÎÄ¼ş(*.txt)|*.txt|cueÎÄ¼ş(*.cue)|*.cue|logÎÄ¼ş(*.log)|*.log|All Files (*.*)|*.*||"));
+	CFileDialog openFile(TRUE,_T("*.txt"),NULL,OFN_EXTENSIONDIFFERENT|OFN_FILEMUSTEXIST|OFN_PATHMUSTEXIST,_T("æ–‡æœ¬æ–‡ä»¶(*.txt;*.cue;*.log)|*.txt;*.cue;*.log|txtæ–‡æœ¬æ–‡ä»¶(*.txt)|*.txt|cueæ–‡ä»¶(*.cue)|*.cue|logæ–‡ä»¶(*.log)|*.log|All Files (*.*)|*.*||"));
 	if (openFile.DoModal() == IDOK)
 	{
 		m_FilePathName=openFile.GetPathName();
@@ -1200,21 +1225,20 @@ void CAnsi2UnicodeDlg::OnFileOpen()
 
 void CAnsi2UnicodeDlg::OnFileSave()
 {
-	CFileDialog saveFile(FALSE,_T("*.txt"),NULL,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_PATHMUSTEXIST,_T("txtÎÄ±¾ÎÄ¼ş(*.txt)|*.txt|cueÎÄ¼ş(*.cue)|*.cue|logÎÄ¼ş(*.log)|*.log|All Files (*.*)|*.*||"));
+	CFileDialog saveFile(FALSE,_T("*.txt"),NULL,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_PATHMUSTEXIST,_T("txtæ–‡æœ¬æ–‡ä»¶(*.txt)|*.txt|cueæ–‡ä»¶(*.cue)|*.cue|logæ–‡ä»¶(*.log)|*.log|All Files (*.*)|*.*||"));
 	if (saveFile.DoModal() == IDOK)
 	{
 		CFile SaveFile;
 		if (!SaveFile.Open(saveFile.GetFileName(),CFile::modeCreate|CFile::modeWrite|CFile::shareExclusive|CFile::typeBinary))
 		{
-			::AfxMessageBox(_T("ÎŞ·¨Ğ´ÈëÎÄ¼ş£¡"),MB_OK);
+			::AfxMessageBox(_T("æ— æ³•å†™å…¥æ–‡ä»¶ï¼"),MB_OK);
 			return;
 		}
 		CString UnicodeStr;
 		GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(UnicodeStr);
-		CStringA UTF8Str=CW2A(UnicodeStr,CP_UTF8);
-		char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
-		SaveFile.Write(&UTF8BOM,3);
-		SaveFile.Write((LPCSTR)UTF8Str,UTF8Str.GetLength());
+		std::string &utf8str = CC4EncodeUTF16::convert2utf8((LPCTSTR)UnicodeStr, UnicodeStr.GetLength());
+		SaveFile.Write(CC4Encode::UTF_8_BOM, 3);
+		SaveFile.Write(utf8str.c_str(), utf8str.length());
 		SaveFile.Close();
 	}
 }
@@ -1262,13 +1286,13 @@ void CAnsi2UnicodeDlg::OnDropFiles(HDROP hDropInfo)
 		}
 		else
 		{
-			::AfxMessageBox(_T(" Ö»ÄÜÍ¬Ê±´ò¿ªÒ»¸öÎÄ¼ş"),MB_OK);
+			::AfxMessageBox(_T(" åªèƒ½åŒæ—¶æ‰“å¼€ä¸€ä¸ªæ–‡ä»¶"),MB_OK);
 		}
 		::DragFinish(hDropInfo);
 	}
 	else
 	{
-		//×¥È¡ÎÄ¼şÃû
+		//æŠ“å–æ–‡ä»¶å
 		int nFileCount;  
 		nFileCount=::DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, MAX_PATH);
 		CString LeftStr;
@@ -1299,20 +1323,28 @@ void CAnsi2UnicodeDlg::OnCbnSelchangeComboSelectcode()
 
 	if (m_bTransferString)
 	{
-		m_StringCodeType=theCombo->GetCurSel();
-		//×ó
+		theCombo->GetWindowText(m_StringCodeType);
+		//å·¦
 		CString LeftStr;
 		GetDlgItem(IDC_EDIT_ANSI)->GetWindowText(LeftStr);
 		CStringA LeftAnsiStr(LeftStr);
-		//ÓÒ
-		GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode((LPCSTR)LeftAnsiStr,LeftAnsiStr.GetLength(),m_StringCodeType));
+		//å³
+		const CC4Encode *encode = m_context->getEncode((LPCTSTR)m_StringCodeType);
+		if (encode)
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(encode->wconvertText((LPCSTR)LeftAnsiStr,LeftAnsiStr.GetLength()).c_str());
+		else
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CString(LeftAnsiStr));
 		return;
 	}
 
 	if (m_bNeedConvert)
 	{
-		m_StringCodeType=theCombo->GetCurSel();
-		GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode(m_String,m_StringLength,m_StringCodeType));
+		theCombo->GetWindowText(m_StringCodeType);
+		const CC4Encode *encode = m_context->getEncode((LPCTSTR)m_StringCodeType);
+		if (encode)
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(encode->wconvertText(m_String, m_StringLength).c_str());
+		else
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CString(m_String));
 		if (m_Config.AutoFixTTA) FixTTACue();
 		if (m_Config.AutoFixCue) FixCue();
 	}
@@ -1323,15 +1355,14 @@ void CAnsi2UnicodeDlg::OnBnClickedButtonSave()
 	CFile SaveFile;
 	if (!SaveFile.Open(m_FilePathName,CFile::modeCreate|CFile::modeWrite|CFile::shareExclusive|CFile::typeBinary))
 	{
-		::AfxMessageBox(_T("ÎŞ·¨Ğ´ÈëÎÄ¼ş£¡"),MB_OK);
+		::AfxMessageBox(_T("æ— æ³•å†™å…¥æ–‡ä»¶ï¼"),MB_OK);
 		return;
 	}
 	CString UnicodeStr;
 	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(UnicodeStr);
-	CStringA UTF8Str=CW2A(UnicodeStr,CP_UTF8);
-	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
-	SaveFile.Write(&UTF8BOM,3);
-	SaveFile.Write((LPCSTR)UTF8Str,UTF8Str.GetLength());
+	std::string &utf8str = CC4EncodeUTF16::convert2utf8((LPCTSTR)UnicodeStr, UnicodeStr.GetLength());
+	SaveFile.Write(CC4Encode::UTF_8_BOM, 3);
+	SaveFile.Write(utf8str.c_str(), utf8str.length());
 	SaveFile.Close();
 }
 
@@ -1347,15 +1378,14 @@ void CAnsi2UnicodeDlg::OnBnClickedButtonSaveas()
 	CFile SaveFile;
 	if (!SaveFile.Open(FilePath,CFile::modeCreate|CFile::modeWrite|CFile::shareExclusive|CFile::typeBinary))
 	{
-		::AfxMessageBox(_T("ÎŞ·¨Ğ´ÈëÎÄ¼ş£¡"),MB_OK);
+		::AfxMessageBox(_T("æ— æ³•å†™å…¥æ–‡ä»¶ï¼"),MB_OK);
 		return;
 	}
 	CString UnicodeStr;
 	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(UnicodeStr);
-	CStringA UTF8Str=CW2A(UnicodeStr,CP_UTF8);
-	char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
-	SaveFile.Write(&UTF8BOM,3);
-	SaveFile.Write((LPCSTR)UTF8Str,UTF8Str.GetLength());
+	std::string &utf8str = CC4EncodeUTF16::convert2utf8((LPCTSTR)UnicodeStr, UnicodeStr.GetLength());
+	SaveFile.Write(CC4Encode::UTF_8_BOM, 3);
+	SaveFile.Write(utf8str.c_str(), utf8str.length());
 	SaveFile.Close();
 }
 
@@ -1367,58 +1397,52 @@ void CAnsi2UnicodeDlg::OnBnClickedCheckAutocheckcode()
 void CAnsi2UnicodeDlg::OnBnClickedCheckAlwaysontop()
 {
 	m_Config.AlwaysOnTop=!m_Config.AlwaysOnTop;
-	//ÉèÖÃ»òÈ¡Ïû×îÇ°¶Ë
+	//è®¾ç½®æˆ–å–æ¶ˆæœ€å‰ç«¯
 	SetDialogPos();
 }
 
 void CAnsi2UnicodeDlg::OnBnClickedButtonDo()
 {
-	// Ö»ÓĞ×ª»»×Ö·û´®Ê±²ÅÓĞĞ§
+	// åªæœ‰è½¬æ¢å­—ç¬¦ä¸²æ—¶æ‰æœ‰æ•ˆ
 	if (m_bTransferString)
 	{
-		//×ó
+		//å·¦
 		CString LeftStr;
 		GetDlgItem(IDC_EDIT_ANSI)->GetWindowText(LeftStr);
 		CStringA LeftAnsiStr(LeftStr);
 
 		CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 		CStatic   *theStatic =(CStatic*)GetDlgItem(IDC_STATIC_STAT);
-		m_StringCodeType=theCombo->GetCurSel();
-		m_CodeStatus=_T("Î´Öª±àÂë");
+		theCombo->GetWindowText(m_StringCodeType);
+		m_CodeStatus=_T("æœªçŸ¥ç¼–ç ");
 
-		//¼ì²â±àÂë
+		//æ£€æµ‹ç¼–ç 
 		if (m_Config.AutoCheckCode==TRUE)
 		{
-			m_StringCodeType=CheckCodeType((LPCSTR)LeftAnsiStr,LeftAnsiStr.GetLength(),m_StringCodeType);
-			theCombo->SetCurSel(m_StringCodeType);
-			switch (m_StringCodeType)
+			const CC4Encode *encode = m_context->getMostPossibleEncode(m_String);
+			if (encode)
 			{
-			case CODETYPE_DEFAULT:
-				m_CodeStatus=_T("Î´Öª±àÂë");
-				break;
-			case CODETYPE_SHIFTJIS:
-				m_CodeStatus=_T("Shift-JIS");
-				break;
-			case CODETYPE_GBK:
-				m_CodeStatus=_T("GBK");
-				break;
-			case CODETYPE_BIG5:
-				m_CodeStatus=_T("Big5");
-				break;
-			case CODETYPE_UTF8:
-				m_CodeStatus=_T("UTF-8");
-				break;
-			default:
-				m_CodeStatus=_T("Î´Öª±àÂë");
+				m_StringCodeType = encode->getName().c_str();
+				int nIndex = theCombo->FindStringExact(0, m_StringCodeType);
+				theCombo->SetCurSel(nIndex);
+				m_CodeStatus = encode->getName().c_str();
+			} else {
+				theCombo->GetLBText(0,m_StringCodeType);
+				theCombo->SetCurSel(0);
+				m_CodeStatus = _T("æœªçŸ¥ç¼–ç ");
 			}
 		}
 		else
-			m_CodeStatus=_T("ÒÑ¾­¹Ø±Õ±àÂë×Ô¶¯¼ì²â");
+			m_CodeStatus=_T("å·²ç»å…³é—­ç¼–ç è‡ªåŠ¨æ£€æµ‹");
 
-		theStatic->SetWindowText(_T("±àÂë¼ì²â½á¹û£º")+m_CodeStatus);
+		theStatic->SetWindowText(_T("ç¼–ç æ£€æµ‹ç»“æœï¼š")+m_CodeStatus);
 
-		//ÓÒ
-		GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(AnsiToUnicode((LPCSTR)LeftAnsiStr,LeftAnsiStr.GetLength(),m_StringCodeType));
+		//å³
+		const CC4Encode *encode = m_context->getEncode((LPCTSTR)m_StringCodeType);
+		if (encode)
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(encode->wconvertText(m_String, m_StringLength).c_str());
+		else
+			GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CString(m_String));
 	}
 }
 
@@ -1427,22 +1451,22 @@ void CAnsi2UnicodeDlg::OnBnClickedButtonTransferstring()
 	m_bTransferString=!m_bTransferString;
 	if (m_bTransferString)
 	{
-		GetDlgItem(IDC_BUTTON_TRANSFERSTRING)->SetWindowText(_T("ÇĞ»»µ½×ª»»ÎÄµµ"));
+		GetDlgItem(IDC_BUTTON_TRANSFERSTRING)->SetWindowText(_T("åˆ‡æ¢åˆ°è½¬æ¢æ–‡æ¡£"));
 		GetDlgItem(IDC_BUTTON_SAVE)->EnableWindow(FALSE);
 		GetDlgItem(IDC_BUTTON_SAVEAS)->EnableWindow(FALSE);
 		GetDlgItem(IDC_BUTTON_DO)->EnableWindow(TRUE);
-		GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("±àÂë¼ì²â½á¹û£º"));
+		GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("ç¼–ç æ£€æµ‹ç»“æœï¼š"));
 		CMenu *pM=m_menu.GetSubMenu(0);
 		pM->EnableMenuItem(ID_FILE_OPEN,MF_GRAYED);
 	}
 	else
 	{
-		GetDlgItem(IDC_BUTTON_TRANSFERSTRING)->SetWindowText(_T("ÇĞ»»µ½×ª»»×Ö·û´®"));
+		GetDlgItem(IDC_BUTTON_TRANSFERSTRING)->SetWindowText(_T("åˆ‡æ¢åˆ°è½¬æ¢å­—ç¬¦ä¸²"));
 		GetDlgItem(IDC_BUTTON_SAVE)->EnableWindow(TRUE);
 		GetDlgItem(IDC_BUTTON_SAVEAS)->EnableWindow(TRUE);
 		GetDlgItem(IDC_BUTTON_DO)->EnableWindow(FALSE);
-		GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("ÎÄµµ±àÂë¼ì²â½á¹û£º\n\nÎÄµµÂ·¾¶£º"));
-		//»Ö¸´
+		GetDlgItem(IDC_STATIC_STAT)->SetWindowText(_T("æ–‡æ¡£ç¼–ç æ£€æµ‹ç»“æœï¼š\n\næ–‡æ¡£è·¯å¾„ï¼š"));
+		//æ¢å¤
 		CMenu *pM=m_menu.GetSubMenu(0);
 		pM->EnableMenuItem(ID_FILE_OPEN,MF_ENABLED);
 		GetDlgItem(IDC_EDIT_ANSI)->SetWindowText(_T(""));
@@ -1486,26 +1510,26 @@ void CAnsi2UnicodeDlg::FixCue()
 	int BeginPos=CueString.Find(_T("FILE \""));
 	if (BeginPos==-1)
 	{
-		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueÎÄ¼şÒì³£"));
+		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueæ–‡ä»¶å¼‚å¸¸"));
 		return;
 	}
 	int EndPos=CueString.Find(_T("\" WAVE"));
 	if (EndPos==-1)
 	{
-		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueÎÄ¼şÒì³£"));
+		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueæ–‡ä»¶å¼‚å¸¸"));
 		return;
 	}
 	BeginPos+=6;
 	if (BeginPos>=EndPos)
 	{
-		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueÎÄ¼şÒì³£"));
+		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueæ–‡ä»¶å¼‚å¸¸"));
 		return;
 	}
 
-	CString MusicFileName,MusicFilePath; //ÒôÆµÎÄ¼şÃû£¬Â·¾¶
+	CString MusicFileName,MusicFilePath; //éŸ³é¢‘æ–‡ä»¶åï¼Œè·¯å¾„
 	MusicFileName=CueString.Mid(BeginPos,EndPos-BeginPos);
 
-	//ÒÀ¾İÎÄµµÂ·¾¶£ºm_FilePathName²éÕÒÒôÆµÎÄ¼ş
+	//ä¾æ®æ–‡æ¡£è·¯å¾„ï¼šm_FilePathNameæŸ¥æ‰¾éŸ³é¢‘æ–‡ä»¶
 	int pos=m_FilePathName.ReverseFind('\\');
 	MusicFilePath=m_FilePathName.Left(pos);
 	MusicFilePath+=_T("\\");
@@ -1515,11 +1539,11 @@ void CAnsi2UnicodeDlg::FixCue()
 	HANDLE hFind;
 	hFind=FindFirstFile(MusicFilePath, &FindFileData);
 
-	if (hFind==INVALID_HANDLE_VALUE) //Ã»ÕÒµ½cueÖĞÒôÆµÎÄ¼ş
+	if (hFind==INVALID_HANDLE_VALUE) //æ²¡æ‰¾åˆ°cueä¸­éŸ³é¢‘æ–‡ä»¶
 	{
 		pos=MusicFilePath.ReverseFind('.');
 		MusicFilePath=MusicFilePath.Left(pos);
-		//Ìæ»»À©Õ¹Ãû²éÕÒ
+		//æ›¿æ¢æ‰©å±•åæŸ¥æ‰¾
 		CString FindFilePath;
 
 		FindFilePath=MusicFilePath+_T(".ape"); //ape
@@ -1642,7 +1666,7 @@ void CAnsi2UnicodeDlg::FixCue()
 			return;
 		}
 
-		//×îºó»¹ÊÇÃ»ÕÒµ½
+		//æœ€åè¿˜æ˜¯æ²¡æ‰¾åˆ°
 		FindClose(hFind);
 		return;
 	}
@@ -1660,23 +1684,23 @@ void CAnsi2UnicodeDlg::FixInternalCue(CString AudioFileName)
 	int BeginPos=CueString.Find(_T("FILE \""));
 	if (BeginPos==-1)
 	{
-		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueÎÄ¼şÒì³£"));
+		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueæ–‡ä»¶å¼‚å¸¸"));
 		return;
 	}
 	int EndPos=CueString.Find(_T("\" WAVE"));
 	if (EndPos==-1)
 	{
-		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueÎÄ¼şÒì³£"));
+		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueæ–‡ä»¶å¼‚å¸¸"));
 		return;
 	}
 	BeginPos+=6;
 	if (BeginPos>=EndPos)
 	{
-		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueÎÄ¼şÒì³£"));
+		if (!m_Config.CloseCuePrompt) MessageBox(_T("cueæ–‡ä»¶å¼‚å¸¸"));
 		return;
 	}
 
-	CString OldFileName; //ÒôÆµÎÄ¼şÃû
+	CString OldFileName; //éŸ³é¢‘æ–‡ä»¶å
 	OldFileName=CueString.Mid(BeginPos,EndPos-BeginPos);
 	CueString.Replace(OldFileName,AudioFileName);
 	GetDlgItem(IDC_EDIT_UNICODE)->SetWindowText(CueString);
@@ -1689,7 +1713,7 @@ void CAnsi2UnicodeDlg::FixTTACue()
 
 	CString OldCueString;
 	GetDlgItem(IDC_EDIT_UNICODE)->GetWindowText(OldCueString);
-	OldCueString.MakeLower(); //×ª»»ÎªĞ¡Ğ´
+	OldCueString.MakeLower(); //è½¬æ¢ä¸ºå°å†™
 	int Pos=OldCueString.Find(_T("the true audio"));
 	if (Pos<=0)
 		return;
