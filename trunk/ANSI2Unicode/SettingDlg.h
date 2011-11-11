@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "resource.h"
 #include "Ansi2UnicodeDlg.h"
 
@@ -16,7 +16,7 @@ public:
 	BOOL DeleteRegKey();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV ֧��
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
 protected:
 	DECLARE_MESSAGE_MAP()

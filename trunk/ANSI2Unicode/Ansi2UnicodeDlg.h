@@ -1,65 +1,67 @@
-/************************************************************************/
-/*  Ansi to Unicode 1.0.3                                               */
+ï»¿/************************************************************************/
+/*  Ansi to Unicode 1.1                                                 */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */
 /************************************************************************/
 
-// Ansi2UnicodeDlg.h : Í·ÎÄ¼ş
+// Ansi2UnicodeDlg.h : å¤´æ–‡ä»¶
 //
 
 #pragma once
-#include "..\misc\tinyxml.h"
+#include "../c4-lib/tinyxml.h"
 
-//ÅäÖÃ
+//é…ç½®
 typedef struct CConfig_tag
 {
-	CString TemplateStr;                   //ÃüÃûÄ£°å
-	BOOL AutoFixCue;                       //×Ô¶¯ĞŞÕıcueÖĞµÄÒôÆµÎÄ¼şÀ©Õ¹Ãû
-	BOOL AutoFixTTA;                       //×Ô¶¯ĞŞÕı¾ÉÊ½TTA±êÇ©
-	BOOL AcceptDragAudioFile;              //½ÓÊÜÍÏÒ·ÒôÆµÎÄµµÌáÈ¡ÄÚÇ¶cue
-	BOOL AutoCheckCode;                    //ÊÇ·ñ×Ô¶¯¼ì²é±àÂë
-	BOOL AlwaysOnTop;                      //ÊÇ·ñ×ÜÔÚ×îÇ°
-	BOOL CloseCuePrompt;                   //ÊÇ·ñ¹Ø±ÕcueÎÄ¼şÓĞ´íÎóµÄÌáÊ¾
-	BOOL RegNewUniFile;                    //×¢²áĞÂ½¨uniÎÄ¼ş
+	CString TemplateStr;                   //å‘½åæ¨¡æ¿
+	BOOL AutoFixCue;                       //è‡ªåŠ¨ä¿®æ­£cueä¸­çš„éŸ³é¢‘æ–‡ä»¶æ‰©å±•å
+	BOOL AutoFixTTA;                       //è‡ªåŠ¨ä¿®æ­£æ—§å¼TTAæ ‡ç­¾
+	BOOL AcceptDragAudioFile;              //æ¥å—æ‹–æ›³éŸ³é¢‘æ–‡æ¡£æå–å†…åµŒcue
+	BOOL AutoCheckCode;                    //æ˜¯å¦è‡ªåŠ¨æ£€æŸ¥ç¼–ç 
+	BOOL AlwaysOnTop;                      //æ˜¯å¦æ€»åœ¨æœ€å‰
+	BOOL CloseCuePrompt;                   //æ˜¯å¦å…³é—­cueæ–‡ä»¶æœ‰é”™è¯¯çš„æç¤º
+	BOOL RegNewUniFile;                    //æ³¨å†Œæ–°å»ºuniæ–‡ä»¶
+	CString MapConfName;                   //å­—ç¬¦æ˜ å°„è¡¨é…ç½®æ–‡ä»¶è·¯å¾„
 }CConfig;
 
-// CAnsi2UnicodeDlg ¶Ô»°¿ò
+// CAnsi2UnicodeDlg å¯¹è¯æ¡†
 class CAnsi2UnicodeDlg : public CDialog
 {
-// ¹¹Ôì
+// æ„é€ 
 public:
-	CAnsi2UnicodeDlg(CWnd* pParent = NULL);	// ±ê×¼¹¹Ôìº¯Êı
+	CAnsi2UnicodeDlg(CWnd* pParent = NULL);	// æ ‡å‡†æ„é€ å‡½æ•°
 	~CAnsi2UnicodeDlg();
 
-// ¶Ô»°¿òÊı¾İ
+// å¯¹è¯æ¡†æ•°æ®
 	enum { IDD = IDD_ANSI2UNICODE_DIALOG };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV æ”¯æŒ
 
 
-// ÊµÏÖ
+// å®ç°
 protected:
 	HICON    m_hLittleIcon;
 	HICON    m_hBigIcon;
-	CMenu    m_menu;                //²Ëµ¥
-	BOOL     m_bNeedConvert;        //ĞèÒª×ª»»
-	char*    m_RawString;           //Ô­Ê¼×Ö·û´®£¨´ÓÎÄ±¾¶ÁÈ¡£¬º¬BOM£©
-	UINT     m_RawStringLength;     //Ô­Ê¼×Ö·û´®µÄ³¤¶È£¨´ÓÎÄ±¾»ñÈ¡£¬º¬BOM³¤¶È)
-	char*    m_String;              //×Ö·û´®£¨²»º¬BOM£©
-	UINT     m_StringLength;        //×Ö·û´®µÄ³¤¶È£¨²»º¬BOM£©
-	int      m_StringCodeType;      //×Ö·û´®±àÂëÀàĞÍ
-	wchar_t* m_UnicodeString;       //Unicode×Ö·û´®
-	UINT     m_UnicodeLength;       //Unicode×Ö·û´®µÄ³¤¶È
-	CString  m_FilePathName;        //ÎÄ±¾ÎÄ¼şÂ·¾¶
-	CString  m_CodeStatus;          //±àÂë¼ì²â×´Ì¬
-	CConfig  m_Config;              //ÅäÖÃ
-	CString  m_ConfigPath;          //ÅäÖÃÎÄ¼şÂ·¾¶
-	//BOOL     m_bConfigLoaded;     //ÅäÖÃ³É¹¦¼ÓÔØ±ê¼Ç
-	//BOOL     m_bCommandLineOpen;  //ÃüÁîĞĞ²ÎÊı±ê¼Ç
-	BOOL     m_bCueFile;            //ÎÄ±¾ÊÇcueÎÄ¼ş
-	BOOL     m_bTransferString;    //ÇĞ»»µ½×ª»»×Ö·û´®×´Ì¬
+	CMenu    m_menu;                //èœå•
+	BOOL     m_bNeedConvert;        //éœ€è¦è½¬æ¢
+	char*    m_RawString;           //åŸå§‹å­—ç¬¦ä¸²ï¼ˆä»æ–‡æœ¬è¯»å–ï¼Œå«BOMï¼‰
+	UINT     m_RawStringLength;     //åŸå§‹å­—ç¬¦ä¸²çš„é•¿åº¦ï¼ˆä»æ–‡æœ¬è·å–ï¼Œå«BOMé•¿åº¦)
+	char*    m_String;              //å­—ç¬¦ä¸²ï¼ˆä¸å«BOMï¼‰
+	UINT     m_StringLength;        //å­—ç¬¦ä¸²çš„é•¿åº¦ï¼ˆä¸å«BOMï¼‰
+	CString  m_StringCodeType;      //å­—ç¬¦ä¸²ç¼–ç ç±»å‹
+	wchar_t* m_UnicodeString;       //Unicodeå­—ç¬¦ä¸²
+	UINT     m_UnicodeLength;       //Unicodeå­—ç¬¦ä¸²çš„é•¿åº¦
+	CString  m_FilePathName;        //æ–‡æœ¬æ–‡ä»¶è·¯å¾„
+	CString  m_CodeStatus;          //ç¼–ç æ£€æµ‹çŠ¶æ€
+	CConfig  m_Config;              //é…ç½®
+	CString  m_ConfigPath;          //é…ç½®æ–‡ä»¶è·¯å¾„
+	//BOOL     m_bConfigLoaded;     //é…ç½®æˆåŠŸåŠ è½½æ ‡è®°
+	//BOOL     m_bCommandLineOpen;  //å‘½ä»¤è¡Œå‚æ•°æ ‡è®°
+	BOOL     m_bCueFile;            //æ–‡æœ¬æ˜¯cueæ–‡ä»¶
+	BOOL     m_bTransferString;     //åˆ‡æ¢åˆ°è½¬æ¢å­—ç¬¦ä¸²çŠ¶æ€
+	CC4Context* m_context;          // converting context
 
 	BOOL LoadConfigFile(TiXmlDocument *xmlfile);
 	BOOL CreateConfigFile();
@@ -72,7 +74,7 @@ protected:
 	BOOL ExtractTakInternalCue(CString AudioFileName);
 	BOOL ExtractFlacInternalCue(CString AudioFileName);
 
-	// Éú³ÉµÄÏûÏ¢Ó³Éäº¯Êı
+	// ç”Ÿæˆçš„æ¶ˆæ¯æ˜ å°„å‡½æ•°
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();

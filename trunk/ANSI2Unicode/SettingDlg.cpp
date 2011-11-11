@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "StdAfx.h"
 #include "SettingDlg.h"
@@ -21,6 +21,7 @@ void CSettingDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SETTING_REPLACECHECK, m_Config.AutoFixTTA);
 	DDX_Check(pDX, IDC_SETTING_INCUECHECK, m_Config.AcceptDragAudioFile);
 	DDX_Check(pDX, IDC_SETTING_CLOSEPROMPTCHECK, m_Config.CloseCuePrompt);
+	DDX_Text(pDX, IDC_MAPCONF_EDIT, m_Config.MapConfName);
 }
 
 BEGIN_MESSAGE_MAP(CSettingDlg, CDialog)
@@ -30,14 +31,14 @@ BEGIN_MESSAGE_MAP(CSettingDlg, CDialog)
 	ON_BN_CLICKED(IDC_TXTOLDSTYLE_BUTTON, &CSettingDlg::OnBnClickedTxtoldstyleButton)
 END_MESSAGE_MAP()
 
-//Ğ´×¢²á±íÖµÄ¬ÈÏÀàĞÍÊÇREG_SZ
+//å†™æ³¨å†Œè¡¨å€¼é»˜è®¤ç±»å‹æ˜¯REG_SZ
 BOOL CSettingDlg::AddRegKey(HKEY hKey,LPCTSTR lpSubItem,LPCTSTR lpKey,LPCTSTR lpValue,DWORD dwType)
 {
 	HKEY hAddKey;
-	DWORD dwDisp; //´æ·ÅĞÂ½¨×ÓÏîÊ±µÄ·µ»ØÀàĞÍ
+	DWORD dwDisp; //å­˜æ”¾æ–°å»ºå­é¡¹æ—¶çš„è¿”å›ç±»å‹
 	if (RegOpenKeyEx(hKey,lpSubItem,0L,KEY_ALL_ACCESS,&hAddKey))
 	{
-		//²»´æÔÚ×ÓÏî£¬ĞÂ½¨Ö®
+		//ä¸å­˜åœ¨å­é¡¹ï¼Œæ–°å»ºä¹‹
 		if (RegCreateKeyEx(hKey,lpSubItem,0L,NULL,REG_OPTION_NON_VOLATILE,KEY_WRITE,NULL,&hAddKey,&dwDisp))
 		{
 			return FALSE;
@@ -58,10 +59,10 @@ BOOL CSettingDlg::DeleteRegKey()
 	return TRUE;
 }
 
-//×¢²áµ½¹ØÁªÎÄ¼şÓÒ¼ü²Ëµ¥
+//æ³¨å†Œåˆ°å…³è”æ–‡ä»¶å³é”®èœå•
 void CSettingDlg::OnBnClickedSettingRegisterbutton()
 {
-	TCHAR AppPathName[MAX_PATH]; //×î³¤260
+	TCHAR AppPathName[MAX_PATH]; //æœ€é•¿260
 	GetModuleFileName(NULL, AppPathName, MAX_PATH);
 
 	/*
@@ -69,28 +70,28 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 	@="UniCue.UNI"
 	*/
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".uni"),_T(""),_T("UniCue.UNI")))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\.uni]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\.uni]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\UniCue.UNI]
-	@="UniCue ÎÄ¼ş"
+	@="UniCue æ–‡ä»¶"
 	*/
-	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI"),_T(""),_T("UniCue ÎÄ¼ş")))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\UniCue.UNI]\"Ê§°Ü"));
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI"),_T(""),_T("UniCue æ–‡ä»¶")))
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\UniCue.UNI]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\UniCue.UNI\shell]
 	@="Open"
 	*/
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell"),_T(""),_T("Open")))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open]
-	@="Ê¹ÓÃ UniCue ´ò¿ª"
+	@="ä½¿ç”¨ UniCue æ‰“å¼€"
 	*/
-	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open"),_T(""),_T("Ê¹ÓÃ UniCue ´ò¿ª")))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\Open]\"Ê§°Ü"));
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open"),_T(""),_T("ä½¿ç”¨ UniCue æ‰“å¼€")))
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\Open]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\Open\command]
@@ -100,40 +101,40 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 	PathValue+=AppPathName;
 	PathValue+=_T("\" \"%1\"");
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open\\command"),_T(""),(LPCTSTR)PathValue))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\Open\\command]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\Open\\command]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue]
-	@="Ê¹ÓÃ UniCue ×ª»»±àÂë"
+	@="ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç "
 	*/
-	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue"),_T(""),_T("Ê¹ÓÃ UniCue ×ª»»±àÂë")))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\unicue]\"Ê§°Ü"));
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue"),_T(""),_T("ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç ")))
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\unicue]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\UniCue.UNI\shell\unicue\command]
 	@="\"AppPathName\" \"%1\""
 	*/
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\unicue\\command"),_T(""),(LPCTSTR)PathValue))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\unicue\\command]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\shell\\unicue\\command]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\txtfile\shell\unicue]
-	@="Ê¹ÓÃ UniCue ×ª»»±àÂë"
+	@="ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç "
 	*/
-	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue"),_T(""),_T("Ê¹ÓÃ UniCue ×ª»»±àÂë")))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\txtfile\\shell\\unicue]\"Ê§°Ü"));
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue"),_T(""),_T("ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç ")))
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\txtfile\\shell\\unicue]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\txtfile\shell\unicue\command]
 	@="\"AppPathName\" \"%1\""
 	*/
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("txtfile\\shell\\unicue\\command"),_T(""),(LPCTSTR)PathValue))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\txtfile\\shell\\unicue\\command]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\txtfile\\shell\\unicue\\command]\"å¤±è´¥"));
 
-	//²éÕÒcueÎÄ¼şµÄ×¢²á±íĞÅÏ¢£¬¼Ù¶¨cueÒÑ¾­¹ØÁªµ½foobar2000.CUE
+	//æŸ¥æ‰¾cueæ–‡ä»¶çš„æ³¨å†Œè¡¨ä¿¡æ¯ï¼Œå‡å®šcueå·²ç»å…³è”åˆ°foobar2000.CUE
 	/*
 	[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue]
-	@="Ê¹ÓÃ UniCue ×ª»»±àÂë"
+	@="ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç "
 
 	[HKEY_CLASSES_ROOT\foobar2000.CUE\shell\unicue\command]
 	@="\"AppPathName\" \"%1\""
@@ -141,39 +142,39 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 	HKEY hCue;
 	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue))
 	{
-		//²»´æÔÚ.cue
+		//ä¸å­˜åœ¨.cue
 		/*
 		[HKEY_CLASSES_ROOT\.cue]
 		@="UniCue.UNI"
 		*/
 		if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".cue"),_T(""),_T("UniCue.UNI")))
-			AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\.cue]\"Ê§°Ü"));
+			AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\.cue]\"å¤±è´¥"));
 	}
 	else
 	{
-		//´æÔÚ.cue
+		//å­˜åœ¨.cue
 		DWORD BufferSize=520,ValueType;
-		WCHAR *CueFileType = new WCHAR[260]; //³¤¶ÈÒ»°ã²»»á³¬¹ı260¸ö×Ö·û
+		WCHAR *CueFileType = new WCHAR[260]; //é•¿åº¦ä¸€èˆ¬ä¸ä¼šè¶…è¿‡260ä¸ªå­—ç¬¦
 		wmemset(CueFileType,0,260);
 		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,(BYTE*)CueFileType,&BufferSize)==ERROR_SUCCESS)
 		{
 			BufferSize=wcslen(CueFileType);
 			if (ValueType!=REG_SZ)
 			{
-				//¶ÁÈ¡¼üÖµ³ö´í
+				//è¯»å–é”®å€¼å‡ºé”™
 				AddRegKey(HKEY_CLASSES_ROOT,_T(".cue"),_T(""),_T("UniCue.UNI"));
 			}
 			else
 			{
-				//¼Ù¶¨CueFileTypeµÈÓÚFoobar2000.CUE
+				//å‡å®šCueFileTypeç­‰äºFoobar2000.CUE
 				CString CueKeyPath(CueFileType);
 				//AfxMessageBox(CueKeyPath);
 				CueKeyPath+=_T("\\Shell\\unicue");
-				if (!AddRegKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,_T(""),_T("Ê¹ÓÃ UniCue ×ª»»±àÂë")))
-					AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\foobar2000.CUE\\shell\\unicue\\command]\"Ê§°Ü"));
+				if (!AddRegKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,_T(""),_T("ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç ")))
+					AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\foobar2000.CUE\\shell\\unicue\\command]\"å¤±è´¥"));
 				CueKeyPath+=_T("\\command");
 				if (!AddRegKey(HKEY_CLASSES_ROOT,(LPCTSTR)CueKeyPath,_T(""),(LPCTSTR)PathValue))
-					AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\foobar2000.CUE\\shell\\unicue\\command]\"Ê§°Ü"));
+					AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\foobar2000.CUE\\shell\\unicue\\command]\"å¤±è´¥"));
 			}
 		}
 		delete []CueFileType;
@@ -182,24 +183,24 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 
 	/*
 	[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue]
-	@="Ê¹ÓÃ UniCue ×ª»»±àÂë"
+	@="ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç "
 	*/
-	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue"),_T(""),_T("Ê¹ÓÃ UniCue ×ª»»±àÂë")))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\Applications\\notepad.exe\\shell\\unicue]\"Ê§°Ü"));
+	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue"),_T(""),_T("ä½¿ç”¨ UniCue è½¬æ¢ç¼–ç ")))
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\Applications\\notepad.exe\\shell\\unicue]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\Applications\notepad.exe\shell\unicue\command]
 	@="\"AppPathName\" \"%1\""
 	*/
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("Applications\\notepad.exe\\shell\\unicue\\command"),_T(""),(LPCTSTR)PathValue))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\Applications\\notepad.exe\\shell\\unicue\\command]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\Applications\\notepad.exe\\shell\\unicue\\command]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\Applications\ANSI2Unicode.exe\shell\open\command]
 	@="\"AppPathName\" \"%1\""
 	*/
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open\\command"),_T(""),(LPCTSTR)PathValue))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\Applications\\ANSI2Unicode.exe\\shell\\open\\command]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\Applications\\ANSI2Unicode.exe\\shell\\open\\command]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\UniCue.UNI\DefaultIcon]
@@ -210,7 +211,7 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 	PathValue=PathValue.Left(pos);
 	PathValue+=_T("\\icons\\uni.ico");
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"),_T(""),(LPCTSTR)PathValue))
-		AfxMessageBox(_T("´´½¨×ÓÏî\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\DefaultIcon]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºå­é¡¹\"[HKEY_CLASSES_ROOT\\UniCue.UNI\\DefaultIcon]\"å¤±è´¥"));
 
 	/*
 	[HKEY_CLASSES_ROOT\.uni\ShellNew]
@@ -223,19 +224,19 @@ void CSettingDlg::OnBnClickedSettingRegisterbutton()
 		PathValue=PathValue.Left(pos);
 		PathValue+=_T("\\null.uni");
 		if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"),_T("FileName"),(LPCTSTR)PathValue))
-			AfxMessageBox(_T("´´½¨¼üÖµ\"[HKEY_CLASSES_ROOT\\.uni\\ShellNew\\FileName]\"Ê§°Ü"));
+			AfxMessageBox(_T("åˆ›å»ºé”®å€¼\"[HKEY_CLASSES_ROOT\\.uni\\ShellNew\\FileName]\"å¤±è´¥"));
 	}
 
-	//Ë¢ĞÂshellµÄÍ¼±ê»º´æ
+	//åˆ·æ–°shellçš„å›¾æ ‡ç¼“å­˜
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
 
-	//AfxMessageBox(_T("×¢²áÍê³É!"));
+	//AfxMessageBox(_T("æ³¨å†Œå®Œæˆ!"));
 }
 
-//Ğ¶ÔØÓÒ¼ü²Ëµ¥¹ØÁª
+//å¸è½½å³é”®èœå•å…³è”
 void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 {
-	RegDeleteKey(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"));  //32bit³ÌĞò
+	RegDeleteKey(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"));  //32bitç¨‹åº
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T(".uni"));
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"));
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open\\command"));
@@ -252,12 +253,12 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open"));
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell"));
 	RegDeleteKey(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe"));
-	//Ğ¶ÔØcueÎÄ¼şµÄÓÒ¼ü²Ëµ¥
+	//å¸è½½cueæ–‡ä»¶çš„å³é”®èœå•
 	HKEY hCue;
-	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue)==ERROR_SUCCESS)  //´æÔÚ.cue
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue)==ERROR_SUCCESS)  //å­˜åœ¨.cue
 	{
 		DWORD BufferSize=520,ValueType;
-		WCHAR *CueFileType = new WCHAR[260]; //³¤¶ÈÒ»°ã²»»á³¬¹ı260¸ö×Ö·û
+		WCHAR *CueFileType = new WCHAR[260]; //é•¿åº¦ä¸€èˆ¬ä¸ä¼šè¶…è¿‡260ä¸ªå­—ç¬¦
 		wmemset(CueFileType,0,260);
 		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,(BYTE*)CueFileType,&BufferSize)==ERROR_SUCCESS)
 		{
@@ -275,7 +276,7 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 	}
 
 	/*
-	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"),KEY_WOW64_32KEY,0L);  //32bit³ÌĞò
+	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T(".uni\\ShellNew"),KEY_WOW64_32KEY,0L);  //32bitç¨‹åº
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T(".uni"),KEY_WOW64_32KEY,0L);
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\DefaultIcon"),KEY_WOW64_32KEY,0L);
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("UniCue.UNI\\shell\\Open\\command"),KEY_WOW64_32KEY,0L);
@@ -292,12 +293,12 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell\\open"),KEY_WOW64_32KEY,0L);
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe\\shell"),KEY_WOW64_32KEY,0L);
 	RegDeleteKeyEx(HKEY_CLASSES_ROOT,_T("Applications\\ANSI2Unicode.exe"),KEY_WOW64_32KEY,0L);
-	//Ğ¶ÔØcueÎÄ¼şµÄÓÒ¼ü²Ëµ¥
+	//å¸è½½cueæ–‡ä»¶çš„å³é”®èœå•
 	HKEY hCue;
-	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue)==ERROR_SUCCESS)  //´æÔÚ.cue
+	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".cue"),0L,KEY_ALL_ACCESS,&hCue)==ERROR_SUCCESS)  //å­˜åœ¨.cue
 	{
 		DWORD BufferSize=520,ValueType;
-		BYTE *Data = new BYTE[520]; //³¤¶ÈÒ»°ã²»»á³¬¹ı260¸ö×Ö·û
+		BYTE *Data = new BYTE[520]; //é•¿åº¦ä¸€èˆ¬ä¸ä¼šè¶…è¿‡260ä¸ªå­—ç¬¦
 		memset(Data,0,520);
 		if (RegQueryValueEx(hCue,_T(""),0L,&ValueType,Data,&BufferSize)==ERROR_SUCCESS)
 		{
@@ -325,13 +326,13 @@ void CSettingDlg::OnBnClickedSettingUnregisterbutton()
 	}
 	*/
 
-	//Ë¢ĞÂshellµÄÍ¼±ê»º´æ
+	//åˆ·æ–°shellçš„å›¾æ ‡ç¼“å­˜
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
 }
 
 void CSettingDlg::OnBnClickedTxtutf8Button()
 {
-	// É¾³ı[HKEY_CLASSES_ROOT\.txt\ShellNew] ÏÂµÄ¼üÖµ
+	// åˆ é™¤[HKEY_CLASSES_ROOT\.txt\ShellNew] ä¸‹çš„é”®å€¼
 	HKEY hKey;
 	if (RegOpenKeyEx(HKEY_CLASSES_ROOT,_T(".txt\\ShellNew"),0L,KEY_ALL_ACCESS,&hKey)==ERROR_SUCCESS)
 		RegDeleteValue(hKey,_T("NullFile"));
@@ -339,7 +340,7 @@ void CSettingDlg::OnBnClickedTxtutf8Button()
 	[HKEY_CLASSES_ROOT\.txt\ShellNew]
 	"FileName"="AppFolder\\null.uni"
 	*/
-	TCHAR AppPathName[MAX_PATH]; //×î³¤260
+	TCHAR AppPathName[MAX_PATH]; //æœ€é•¿260
 	GetModuleFileName(NULL, AppPathName, MAX_PATH);
 
 	CString PathValue(AppPathName);
@@ -347,7 +348,7 @@ void CSettingDlg::OnBnClickedTxtutf8Button()
 	PathValue=PathValue.Left(pos);
 	PathValue+=_T("\\null.uni");
 	if (!AddRegKey(HKEY_CLASSES_ROOT,_T(".txt\\ShellNew"),_T("FileName"),(LPCTSTR)PathValue))
-		AfxMessageBox(_T("´´½¨¼üÖµ\"[HKEY_CLASSES_ROOT\\.txt\\ShellNew\\FileName]\"Ê§°Ü"));
+		AfxMessageBox(_T("åˆ›å»ºé”®å€¼\"[HKEY_CLASSES_ROOT\\.txt\\ShellNew\\FileName]\"å¤±è´¥"));
 }
 
 void CSettingDlg::OnBnClickedTxtoldstyleButton()
