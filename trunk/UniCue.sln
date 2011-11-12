@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ansi2Unicode", "ANSI2Unicode\Ansi2Unicode.vcxproj", "{7CD5A26A-B8E8-4270-9E4A-D24AAE804073}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChineseConverter", "ChineseConverter\ChineseConverter.vcxproj", "{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -25,6 +27,15 @@ Global
 		{7CD5A26A-B8E8-4270-9E4A-D24AAE804073}.Template|Win32.Build.0 = Template|Win32
 		{7CD5A26A-B8E8-4270-9E4A-D24AAE804073}.Template|x64.ActiveCfg = Template|x64
 		{7CD5A26A-B8E8-4270-9E4A-D24AAE804073}.Template|x64.Build.0 = Template|x64
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Debug|Win32.Build.0 = Debug|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Debug|x64.ActiveCfg = Debug|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Release|Win32.ActiveCfg = Release|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Release|Win32.Build.0 = Release|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Release|x64.ActiveCfg = Release|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Template|Win32.ActiveCfg = Release|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Template|Win32.Build.0 = Release|Win32
+		{4C1EEB88-B0A9-4735-BB35-12160BF3F53D}.Template|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
