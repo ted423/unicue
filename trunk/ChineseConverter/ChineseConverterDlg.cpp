@@ -1,5 +1,5 @@
-
-// ChineseConverterDlg.cpp : ÊµÏÖÎÄ¼ş
+ï»¿
+// ChineseConverterDlg.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -12,20 +12,20 @@
 #endif
 
 
-// ÓÃÓÚÓ¦ÓÃ³ÌĞò¡°¹ØÓÚ¡±²Ëµ¥ÏîµÄ CAboutDlg ¶Ô»°¿ò
+// ç”¨äºåº”ç”¨ç¨‹åºâ€œå…³äºâ€èœå•é¡¹çš„ CAboutDlg å¯¹è¯æ¡†
 
 class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
 
-// ¶Ô»°¿òÊı¾İ
+// å¯¹è¯æ¡†æ•°æ®
 	enum { IDD = IDD_ABOUTBOX };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV æ”¯æŒ
 
-// ÊµÏÖ
+// å®ç°
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -43,7 +43,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CChineseConverterDlg ¶Ô»°¿ò
+// CChineseConverterDlg å¯¹è¯æ¡†
 
 
 
@@ -73,6 +73,7 @@ CChineseConverterDlg::~CChineseConverterDlg()
 	{
 		delete []m_RawString;
 		m_RawString=NULL;
+		m_String = NULL;
 	}
 	if (m_UnicodeString)
 	{
@@ -98,18 +99,19 @@ BEGIN_MESSAGE_MAP(CChineseConverterDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_DROPFILES()
 	ON_BN_CLICKED(IDC_BUTTON_SAVEAS, &CChineseConverterDlg::OnBnClickedButtonSaveas)
+	ON_CBN_SELCHANGE(IDC_COMBO_SELECTCODE, &CChineseConverterDlg::OnCbnSelchangeComboSelectcode)
 END_MESSAGE_MAP()
 
 
-// CChineseConverterDlg ÏûÏ¢´¦Àí³ÌĞò
+// CChineseConverterDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CChineseConverterDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// ½«¡°¹ØÓÚ...¡±²Ëµ¥ÏîÌí¼Óµ½ÏµÍ³²Ëµ¥ÖĞ¡£
+	// å°†â€œå…³äº...â€èœå•é¡¹æ·»åŠ åˆ°ç³»ç»Ÿèœå•ä¸­ã€‚
 
-	// IDM_ABOUTBOX ±ØĞëÔÚÏµÍ³ÃüÁî·¶Î§ÄÚ¡£
+	// IDM_ABOUTBOX å¿…é¡»åœ¨ç³»ç»Ÿå‘½ä»¤èŒƒå›´å†…ã€‚
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
@@ -127,12 +129,12 @@ BOOL CChineseConverterDlg::OnInitDialog()
 		}
 	}
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
-	// Ìí¼Ó±àÂëÑ¡Ïî
+	// æ·»åŠ ç¼–ç é€‰é¡¹
 	CComboBox *theCombo;
 	theCombo=(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
 	std::list<std::wstring> &encodeList = m_context->getEncodesNameList();
@@ -145,7 +147,7 @@ BOOL CChineseConverterDlg::OnInitDialog()
 	}
 	theCombo->SetCurSel(0);
 
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
 void CChineseConverterDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -161,19 +163,19 @@ void CChineseConverterDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CChineseConverterDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -181,7 +183,7 @@ void CChineseConverterDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -190,8 +192,8 @@ void CChineseConverterDlg::OnPaint()
 	}
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR CChineseConverterDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
@@ -206,7 +208,7 @@ BOOL CChineseConverterDlg::DealFile()
 	if (!OpenFile.Open(m_FilePathName,CFile::modeRead|CFile::shareDenyWrite|CFile::typeBinary))
 	{
 		OpenFile.Close();
-		::AfxMessageBox(_T("´ò¿ªÊ§°Ü£¡"),MB_OK);
+		::AfxMessageBox(_T("æ‰“å¼€å¤±è´¥ï¼"),MB_OK);
 		return FALSE;
 	}
 
@@ -214,7 +216,7 @@ BOOL CChineseConverterDlg::DealFile()
 	if ((fileLength&1) != 0)
 	{
 		OpenFile.Close();
-		::AfxMessageBox(_T("´íÎóµÄÎÄ¼ş¸ñÊ½¡£½öÖ§³ÖUnicode(LE)"),MB_OK);
+		::AfxMessageBox(_T("é”™è¯¯çš„æ–‡ä»¶æ ¼å¼ã€‚ä»…æ”¯æŒUnicode(LE)"),MB_OK);
 		return FALSE;
 	}
 	m_RawStringLength=fileLength>>1;
@@ -248,7 +250,7 @@ BOOL CChineseConverterDlg::DealFile()
 		LeftEdit->SetWindowText(_T(""));
 		RightEdit->SetWindowText(_T(""));
 
-		::AfxMessageBox(_T("´íÎóµÄÎÄ¼ş¸ñÊ½¡£½öÖ§³ÖUnicode(LE)"),MB_OK);
+		::AfxMessageBox(_T("é”™è¯¯çš„æ–‡ä»¶æ ¼å¼ã€‚ä»…æ”¯æŒUnicode(LE)"),MB_OK);
 		return FALSE;
 	}
 	m_String=m_RawString+1;
@@ -290,7 +292,7 @@ void CChineseConverterDlg::OnDropFiles(HDROP hDropInfo)
 	}
 	else
 	{
-		::AfxMessageBox(_T(" Ö»ÄÜÍ¬Ê±´ò¿ªÒ»¸öÎÄ¼ş"),MB_OK);
+		::AfxMessageBox(_T(" åªèƒ½åŒæ—¶æ‰“å¼€ä¸€ä¸ªæ–‡ä»¶"),MB_OK);
 	}
 	::DragFinish(hDropInfo);
 
@@ -302,7 +304,7 @@ void CChineseConverterDlg::OnBnClickedButtonSaveas()
 {
 	if (!m_UnicodeString)
 	{
-		::AfxMessageBox(_T("×ª»»ÄÚÈİÎª¿Õ£¡"),MB_OK);
+		::AfxMessageBox(_T("è½¬æ¢å†…å®¹ä¸ºç©ºï¼"),MB_OK);
 		return;
 	}
 	CString FilePath,FileType;
@@ -315,11 +317,42 @@ void CChineseConverterDlg::OnBnClickedButtonSaveas()
 	CFile SaveFile;
 	if (!SaveFile.Open(FilePath,CFile::modeCreate|CFile::modeWrite|CFile::shareExclusive|CFile::typeBinary))
 	{
-		::AfxMessageBox(_T("ÎŞ·¨Ğ´ÈëÎÄ¼ş£¡"),MB_OK);
+		::AfxMessageBox(_T("æ— æ³•å†™å…¥æ–‡ä»¶ï¼"),MB_OK);
 		return;
 	}
 
 	SaveFile.Write(CC4Encode::LITTLEENDIAN_BOM, 2);
 	SaveFile.Write((void*)m_UnicodeString, m_UnicodeLength*sizeof(wchar_t));
 	SaveFile.Close();
+}
+
+
+void CChineseConverterDlg::OnCbnSelchangeComboSelectcode()
+{
+	CEdit *RightEdit=(CEdit *)GetDlgItem(IDC_EDIT_RIGHT);
+	CComboBox *theCombo  =(CComboBox*)GetDlgItem(IDC_COMBO_SELECTCODE);
+	CString encodeName;
+	theCombo->GetWindowText(encodeName);
+	const CC4Encode *encode = m_context->getEncode((LPCTSTR)encodeName);
+	if (encode)
+	{
+		if (!m_String)
+			return;
+
+		if (m_UnicodeString)
+		{
+			delete []m_UnicodeString;
+			m_UnicodeString = NULL;
+		}
+		m_UnicodeLength = m_StringLength;
+		m_UnicodeString = new wchar_t[m_UnicodeLength+1];
+		m_UnicodeString[m_UnicodeLength] = 0;
+		std::wstring &convertResult = encode->wconvertWideText(m_String, m_StringLength);
+		wmemcpy(m_UnicodeString, convertResult.c_str(), m_StringLength);
+		RightEdit->SetWindowText(m_UnicodeString);
+	}
+	else
+	{
+		RightEdit->SetWindowText(_T(""));
+	}
 }

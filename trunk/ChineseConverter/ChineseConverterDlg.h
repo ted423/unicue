@@ -1,44 +1,44 @@
-/************************************************************************/
-/*  ¼ò·±×ª»» 1.0                                                        */
+ï»¿/************************************************************************/
+/*  ç®€ç¹è½¬æ¢ 1.0                                                        */
 /*  kuyur (kuyur@kuyur.info)  -->twitter: @kuyur                        */
 /*  http://kuyur.info/blog  http://code.google.com/p/unicue             */
 /*  Distributed under GPLv3                                             */
 /************************************************************************/
 
-// ChineseConverterDlg.h : Í·ÎÄ¼ş
+// ChineseConverterDlg.h : å¤´æ–‡ä»¶
 //
 
 #pragma once
 
 
-// CChineseConverterDlg ¶Ô»°¿ò
+// CChineseConverterDlg å¯¹è¯æ¡†
 class CChineseConverterDlg : public CDialogEx
 {
-// ¹¹Ôì
+// æ„é€ 
 public:
-	CChineseConverterDlg(CWnd* pParent = NULL);	// ±ê×¼¹¹Ôìº¯Êı
+	CChineseConverterDlg(CWnd* pParent = NULL);	// æ ‡å‡†æ„é€ å‡½æ•°
 	~CChineseConverterDlg();
 
-// ¶Ô»°¿òÊı¾İ
+// å¯¹è¯æ¡†æ•°æ®
 	enum { IDD = IDD_CHINESECONVERTER_DIALOG };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV æ”¯æŒ
 
-// ÊµÏÖ
+// å®ç°
 protected:
 	HICON    m_hIcon;
-	wchar_t* m_RawString;           // Ô­Ê¼×Ö·û´®£¨´ÓÎÄ±¾¶ÁÈ¡£¬º¬BOM£©
-	UINT     m_RawStringLength;     // Ô­Ê¼×Ö·û´®µÄ³¤¶È£¨´ÓÎÄ±¾»ñÈ¡£¬º¬BOM³¤¶È)
-	wchar_t* m_String;              // ×Ö·û´®£¨²»º¬BOM£©
-	UINT     m_StringLength;        // ×Ö·û´®µÄ³¤¶È£¨²»º¬BOM£©
-	wchar_t* m_UnicodeString;       // Unicode×Ö·û´®
-	UINT     m_UnicodeLength;       // Unicode×Ö·û´®µÄ³¤¶È
-	CString  m_FilePathName;        // ÎÄ±¾ÎÄ¼şÂ·¾¶
+	wchar_t* m_RawString;           // åŸå§‹å­—ç¬¦ä¸²ï¼ˆä»æ–‡æœ¬è¯»å–ï¼Œå«BOMï¼‰
+	UINT     m_RawStringLength;     // åŸå§‹å­—ç¬¦ä¸²çš„é•¿åº¦ï¼ˆä»æ–‡æœ¬è·å–ï¼Œå«BOMé•¿åº¦)
+	wchar_t* m_String;              // å­—ç¬¦ä¸²ï¼ˆä¸å«BOMï¼‰
+	UINT     m_StringLength;        // å­—ç¬¦ä¸²çš„é•¿åº¦ï¼ˆä¸å«BOMï¼‰
+	wchar_t* m_UnicodeString;       // Unicodeå­—ç¬¦ä¸²
+	UINT     m_UnicodeLength;       // Unicodeå­—ç¬¦ä¸²çš„é•¿åº¦
+	CString  m_FilePathName;        // æ–‡æœ¬æ–‡ä»¶è·¯å¾„
 	CC4Context* m_context;          // converting context
 	BOOL DealFile();
 
-	// Éú³ÉµÄÏûÏ¢Ó³Éäº¯Êı
+	// ç”Ÿæˆçš„æ¶ˆæ¯æ˜ å°„å‡½æ•°
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
@@ -47,4 +47,5 @@ protected:
 public:
 	afx_msg void OnDropFiles(HDROP hDropInfo);
 	afx_msg void OnBnClickedButtonSaveas();
+	afx_msg void OnCbnSelchangeComboSelectcode();
 };
