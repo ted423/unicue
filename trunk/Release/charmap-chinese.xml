@@ -25,5 +25,5 @@
         <segment begin="0x0000" end="0x359D" reference="self" type="Unicode BMP" />
         <segment begin="0x359E" end="0x9F9F" reference="buffer" offset="0" type="Unicode BMP" />
         <segment begin="0x9FA0" end="0xFFFF" reference="self" type="Unicode BMP" />
-		</charmap>
+    </charmap>
 </charmaps>
