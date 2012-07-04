@@ -85,5 +85,8 @@
       <Filter>资源文件</Filter>
     </None>
     <None Include="ReadMe.txt" />
+    <None Include="res\Ansi2Unicode_16x16.ico">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

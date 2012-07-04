@@ -124,8 +124,7 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAnsi2UnicodeDlg::IDD, pParent),m_bNeedConvert(TRUE),m_RawStringLength(0),m_StringLength(0),m_UnicodeLength(0),
 	m_StringCodeType("Local Codepage"),/*m_bConfigLoaded(FALSE),m_bCommandLineOpen(FALSE),*/m_bCueFile(FALSE),m_bTransferString(FALSE)
 {
-	m_hLittleIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_LITTLE);
-	//m_hBigIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_BIG);
+	m_hLittleIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_RawString=NULL;
 	m_String=NULL;
 	m_UnicodeString=NULL;
