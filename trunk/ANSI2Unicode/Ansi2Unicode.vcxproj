@@ -230,6 +230,7 @@
   <ItemGroup>
     <None Include="res\Ansi2Unicode.rc2" />
     <None Include="res\Ansi2Unicode.vista.ico" />
+    <None Include="res\Ansi2Unicode_16x16.ico" />
     <None Include="res\Ansi2Unicode_48x48.ico" />
     <None Include="res\Ansi2Unicode_64x64.png" />
     <None Include="ReadMe.txt" />
