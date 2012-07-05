@@ -124,7 +124,8 @@ CAnsi2UnicodeDlg::CAnsi2UnicodeDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAnsi2UnicodeDlg::IDD, pParent),m_bNeedConvert(TRUE),m_RawStringLength(0),m_StringLength(0),m_UnicodeLength(0),
 	m_StringCodeType("Local Codepage"),/*m_bConfigLoaded(FALSE),m_bCommandLineOpen(FALSE),*/m_bCueFile(FALSE),m_bTransferString(FALSE)
 {
-	m_hLittleIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hLittleIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_LITTLE);
+	m_hBigIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME_BIG);
 	m_RawString=NULL;
 	m_String=NULL;
 	m_UnicodeString=NULL;
@@ -257,8 +258,8 @@ BOOL CAnsi2UnicodeDlg::OnInitDialog()
 
 	// 设置此对话框的图标。当应用程序主窗口不是对话框时，框架将自动
 	//  执行此操作
-	SetIcon(m_hLittleIcon, TRUE);		// 设置大图标
-	SetIcon(m_hLittleIcon, FALSE);		// 设置小图标
+	SetIcon(m_hBigIcon, TRUE);		// 设置大图标
+	SetIcon(m_hLittleIcon, FALSE);	// 设置小图标
 
 	// 添加编码选项
 	CComboBox *theCombo;
