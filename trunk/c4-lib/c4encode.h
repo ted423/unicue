@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <xstring>
 #include <vector>
 #include "c4policy.h"
 #include "c4segment.h"
@@ -74,37 +73,37 @@ public :
 
 public:
 	CC4Encode(const std::wstring& name, const std::wstring& version, const std::wstring& description, encode_features features, bool is_auto_check);
-	~CC4Encode();
-	std::wstring virtual toString() const;
-	bool virtual isAutoCheck() const;
-	void virtual setAutoCheck(bool is_auto_check);
-	std::wstring virtual getName() const;
-	std::wstring virtual getVersion() const;
-	std::wstring virtual getDescription() const;
-	encode_features virtual getEncodeFeatures() const;
-	bool virtual hasFeature(CC4Encode::encodeFeature encode_feature) const;
+	virtual ~CC4Encode() {};
+	std::wstring toString() const;
+	bool isAutoCheck() const;
+	void setAutoCheck(bool is_auto_check);
+	std::wstring getName() const;
+	std::wstring getVersion() const;
+	std::wstring getDescription() const;
+	encode_features getEncodeFeatures() const;
+	bool hasFeature(CC4Encode::encodeFeature encode_feature) const;
 
 	/* Input string(Multibyte) matches this encode or not. */
-	bool virtual match(const char *src, unsigned int src_length) const {return true;};
+	bool virtual match(const char *src, unsigned int src_length) const = 0;
 
 	/* Input string(Unicode) matches this encode or not */
-	bool virtual wmatch(const wchar_t *src, unsigned int src_str_length) const {return true;};
+	bool virtual wmatch(const wchar_t *src, unsigned int src_str_length) const = 0;
 
 	/* Convert input string(Multibyte) to multibyte string */
-	std::string  virtual convertText(const char *src, unsigned int src_length) const {return std::string();};
-	std::string  virtual convertString(const char *src) const {return std::string();};
+	std::string  virtual convertText(const char *src, unsigned int src_length) const = 0;
+	std::string  virtual convertString(const char *src) const = 0;
 
 	/* Convert input string(Multibyte/Unicode) to Unicode string */
-	std::wstring virtual wconvertText(const char *src, unsigned int src_length) const {return std::wstring();};
-	std::wstring virtual wconvertString(const char *src) const {return std::wstring();};
+	std::wstring virtual wconvertText(const char *src, unsigned int src_length) const = 0;
+	std::wstring virtual wconvertString(const char *src) const = 0;
 
 	/* Convert input string(Unicode) to multibyte string */
-	std::string  virtual convertWideText(const wchar_t *src, unsigned int src_str_length) const {return std::string();};
-	std::string  virtual convertWideString(const wchar_t *src) const {return std::string();};
+	std::string  virtual convertWideText(const wchar_t *src, unsigned int src_str_length) const = 0;
+	std::string  virtual convertWideString(const wchar_t *src) const = 0;
 
 	/* Convert input string(Unicode) to Unicode string */
-	std::wstring virtual wconvertWideText(const wchar_t *src, unsigned int src_str_length) const {return std::wstring();};
-	std::wstring virtual wconvertWideString(const wchar_t *src) const {return std::wstring();};
+	std::wstring virtual wconvertWideText(const wchar_t *src, unsigned int src_str_length) const = 0;
+	std::wstring virtual wconvertWideString(const wchar_t *src) const = 0;
 
 private:
 	std::wstring    m_name;             // name of the encode, for example: Shift-JIS
@@ -128,16 +127,8 @@ private:
 
 public:
 	CC4EncodeBase(const std::wstring& name, const std::wstring& version, const std::wstring& description, encode_features features, bool is_auto_check, const unsigned char *buffer, unsigned int buffer_length);
+	~CC4EncodeBase() {}
 	// override
-	std::wstring toString() const;
-	bool isAutoCheck() const;
-	void setAutoCheck(bool is_auto_check);
-	std::wstring getName() const;
-	std::wstring getVersion() const;
-	std::wstring getDescription() const;
-	encode_features  getEncodeFeatures() const;
-	bool hasFeature(CC4Encode::encodeFeature encode_feature) const;
-
 	/* Input string(Multibyte) matches this encode or not. */
 	bool match(const char *src, unsigned int src_length) const;
 
@@ -191,6 +182,7 @@ public:
 private:
 	static CC4EncodeUTF16 *s_instance;  // Unicode instance. Singleton pattern
 	CC4EncodeUTF16(const std::wstring& name, const std::wstring& version, const std::wstring& description, bool is_auto_check);
+	~CC4EncodeUTF16() {/*s_instance = NULL;*/};
 	class CGarbo
 	{
 	public:
@@ -202,14 +194,6 @@ private:
 	};
 	static CGarbo garbo;
 public:
-	std::wstring toString() const;
-	bool isAutoCheck() const;
-	void setAutoCheck(bool is_auto_check);
-	std::wstring getName() const;
-	std::wstring getVersion() const;
-	std::wstring getDescription() const;
-	encode_features  getEncodeFeatures() const;
-	bool hasFeature(CC4Encode::encodeFeature encode_feature) const;
 	static std::wstring _getName();
 	static std::wstring _getVersion();
 	static std::wstring _getDescription();
@@ -252,6 +236,7 @@ public:
 private:
 	static CC4EncodeUTF8   *s_instance;    // Utf-8 instance. Singleton pattern
 	CC4EncodeUTF8(const std::wstring& name, const std::wstring& version, const std::wstring& description, bool is_auto_check);
+	~CC4EncodeUTF8() {/*s_instance = NULL;*/};
 	class CGarbo
 	{
 	public:
@@ -263,19 +248,12 @@ private:
 	};
 	static CGarbo garbo;
 public:
-	std::wstring toString() const;
-	bool isAutoCheck() const;
-	void setAutoCheck(bool is_auto_check);
-	std::wstring getName() const;
-	std::wstring getVersion() const;
-	std::wstring getDescription() const;
-	encode_features  getEncodeFeatures() const;
-	bool hasFeature(CC4Encode::encodeFeature encode_feature) const;
 	static std::wstring _getName();
 	static std::wstring _getVersion();
 	static std::wstring _getDescription();
 	static encode_features  _getEncodeFeatures();
 	bool match(const char *src, unsigned int src_length) const;
+	bool wmatch(const wchar_t *src, unsigned int src_str_length) const;
 	static bool _match(const char *src, unsigned int src_length);
 
 	/* simply build a utf-8 string */
