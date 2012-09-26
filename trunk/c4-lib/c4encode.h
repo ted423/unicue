@@ -16,6 +16,10 @@
 
 #pragma once
 
+// c4encode.h
+#ifndef C4ENCODE_H_
+#define C4ENCODE_H_
+
 #include <vector>
 #include "c4policy.h"
 #include "c4segment.h"
@@ -278,3 +282,5 @@ public:
 	static bool convert2unicode(const char *src, unsigned int src_length, wchar_t *dest, unsigned int dest_str_length, bool check_dest_length = false);
 	static unsigned int calcUnicodeStringLength(const char *src, unsigned int src_length);
 };
+
+#endif // C4ENCODE_H_

@@ -14,6 +14,12 @@
 /*                                                                      */
 /************************************************************************/
 
+#pragma once
+
+// c4segment.h
+#ifndef C4SEGMENT_H_
+#define C4SEGMENT_H_
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -64,3 +70,5 @@ public:
 	bool setSegment(unsigned int position, const CC4Segment& segment);
 	const CC4Segment* findMatchedSegment(wchar_t chr) const;
 };
+
+#endif // C4SEGMENT_H_

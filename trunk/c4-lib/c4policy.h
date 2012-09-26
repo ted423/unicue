@@ -14,6 +14,12 @@
 /*                                                                      */
 /************************************************************************/
 
+#pragma once
+
+// c4policy.h
+#ifndef C4POLICY_H_
+#define C4POLICY_H_
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -46,3 +52,5 @@ public:
 	bool setPolicy(unsigned int position, const CC4Policy& policy);
 	bool isContinueReadNextChar(unsigned char chr) const;
 };
+
+#endif // C4POLICY_H_
