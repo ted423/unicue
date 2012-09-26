@@ -16,10 +16,9 @@
 
 #pragma once
 
-// c4.h
-#ifndef C4CONTEXT_H
-#define C4CONTEXT_H
-#endif
+// c4context.h
+#ifndef C4CONTEXT_H_
+#define C4CONTEXT_H_
 
 #include <list>
 #include "c4encode.h"
@@ -53,3 +52,5 @@ private:
 	bool loadCharmapConfig(const TiXmlDocument *xmlfile);
 	bool loadCharmap(const TiXmlElement *charmap_node);
 };
+
+#endif // C4CONTEXT_H_
